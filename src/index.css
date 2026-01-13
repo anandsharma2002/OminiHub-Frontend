@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+@theme {
+    --color-primary: #7c3aed;
+    /* Violet 600 */
+    --color-secondary: #10B981;
+    --color-dark: #020617;
+    /* Slate 950 */
+
+    --font-sans: 'Inter', system-ui, sans-serif;
+}
+
+/* GLOBAL CSS VARIABLES */
+:root {
+    --nav-height: 70px;
+}
+
+/* GLOBAL COMPONENT CLASSES (Reusability Layer) */
+@layer components {
+
+    /* Modern Gradient Button */
+    .btn-primary {
+        @apply px-6 py-2.5 bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-medium rounded-lg shadow-lg shadow-violet-500/30 hover:shadow-violet-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300;
+    }
+
+    /* Glass Card Effect */
+    .card-glass {
+        @apply bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl border border-white/20 dark:border-slate-800/50 shadow-xl rounded-2xl;
+    }
+
+    /* Standard Card */
+    .card {
+        @apply bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6;
+    }
+
+    /* Input Fields */
+    .input-field {
+        @apply w-full px-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 transition-all;
+    }
+
+    /* Page Container */
+    .page-container {
+        @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8;
+    }
+}
+
+/* Global Reset/Typography */
+body {
+    @apply bg-slate-50 dark:bg-[#020617] text-slate-900 dark:text-slate-100 antialiased selection:bg-violet-500/30;
+}
