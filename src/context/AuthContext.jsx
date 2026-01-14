@@ -51,9 +51,9 @@ export const AuthProvider = ({ children }) => {
     };
 
     // Signup Action
-    const signup = async (username, email, password) => {
+    const signup = async (username, email, password, firstName, lastName) => {
         try {
-            const res = await authAPI.signup({ username, email, password });
+            const res = await authAPI.signup({ username, email, password, firstName, lastName });
             if (res.token) {
                 localStorage.setItem('token', res.token);
                 setUser(res.data.user);

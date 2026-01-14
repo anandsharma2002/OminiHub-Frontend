@@ -1,0 +1,227 @@
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import userAPI from '../api/user';
+import docsApi from '../api/docs';
+import DocumentCard from '../components/documents/DocumentCard';
+import { useAuth } from '../context/AuthContext';
+import { FaUser, FaEnvelope, FaIdBadge, FaCalendarAlt, FaArrowLeft, FaFileAlt, FaLock } from 'react-icons/fa';
+
+const UserProfile = () => {
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const { user: currentUser } = useAuth();
+
+    const [user, setUser] = useState(null);
+    const [docs, setDocs] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [docsLoading, setDocsLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    // Check if viewing own profile
+    const isOwnProfile = currentUser && (currentUser._id === id || (user && currentUser._id === user._id));
+
+    // Filter documents
+    const publicDocs = docs.filter(doc => doc.privacy === 'public');
+    const privateDocs = docs.filter(doc => doc.privacy === 'private');
+
+    useEffect(() => {
+        const fetchUserProfile = async () => {
+            try {
+                const res = await userAPI.getUserProfile(id);
+                setUser(res.data.user);
+            } catch (err) {
+                setError('User not found');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        const fetchUserDocs = async () => {
+            try {
+                const res = await docsApi.getDocuments(id);
+                setDocs(res);
+            } catch (err) {
+                console.error("Failed to fetch docs", err);
+            } finally {
+                setDocsLoading(false);
+            }
+        };
+
+        if (id) {
+            fetchUserProfile();
+            fetchUserDocs();
+        }
+    }, [id]);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[50vh]">
+                <div className="text-violet-600 dark:text-violet-400 font-medium animate-pulse">Loading profile...</div>
+            </div>
+        );
+    }
+
+    if (error || !user) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
+                <div className="text-red-500 font-medium">{error || 'User not found'}</div>
+                <button
+                    onClick={() => navigate(-1)}
+                    className="flex items-center space-x-2 text-violet-600 hover:text-violet-700"
+                >
+                    <FaArrowLeft />
+                    <span>Go Back</span>
+                </button>
+            </div>
+        );
+    }
+
+    const joinDate = user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A';
+
+    return (
+        <div className="page-container">
+            <button
+                onClick={() => navigate(-1)}
+                className="flex items-center space-x-2 text-slate-500 hover:text-violet-600 mb-6 transition-colors"
+            >
+                <FaArrowLeft />
+                <span>Back</span>
+            </button>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Profile Card */}
+                <div className="lg:col-span-1">
+                    <div className="card-glass p-8 flex flex-col items-center text-center relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-24 bg-gradient-to-r from-violet-600 to-indigo-600 opacity-20 dark:opacity-40"></div>
+
+                        <div className="relative z-10 mb-4">
+                            <div className="w-32 h-32 rounded-full bg-violet-100 dark:bg-slate-800 border-4 border-white dark:border-slate-900 shadow-xl flex items-center justify-center text-5xl font-bold text-violet-600 dark:text-violet-400 overflow-hidden">
+                                {user.username?.[0]?.toUpperCase()}
+                            </div>
+                        </div>
+
+                        <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
+                            {user.firstName} {user.lastName}
+                        </h2>
+                        <p className="text-slate-500 dark:text-slate-400 mb-2">@{user.username}</p>
+
+                        <span className="px-3 py-1 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-300 text-sm font-medium mb-6">
+                            {user.role || 'User'}
+                        </span>
+
+                        <div className="w-full space-y-4 text-left">
+                            <div className="flex items-center space-x-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                                <FaEnvelope className="text-slate-400" />
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-xs text-slate-500">Email Address</p>
+                                    <p className="text-sm font-medium text-slate-900 dark:text-slate-200 truncate">
+                                        {user.email}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center space-x-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                                <FaCalendarAlt className="text-slate-400" />
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-xs text-slate-500">Joined</p>
+                                    <p className="text-sm font-medium text-slate-900 dark:text-slate-200">
+                                        {joinDate}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Additional Info */}
+                <div className="lg:col-span-2 space-y-6">
+                    <div className="card-glass p-6">
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">About</h3>
+                        <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
+                            {user.profile?.bio || 'No bio available yet.'}
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="card p-6 border-l-4 border-violet-500">
+                            <h3 className="text-slate-500 dark:text-slate-400 text-sm font-medium uppercase tracking-wider">Projects</h3>
+                            <p className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{user.projects?.length || 0}</p>
+                        </div>
+                        <div className="card p-6 border-l-4 border-indigo-500">
+                            <h3 className="text-slate-500 dark:text-slate-400 text-sm font-medium uppercase tracking-wider">Public Docs</h3>
+                            <p className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{publicDocs.length}</p>
+                        </div>
+                        {isOwnProfile && (
+                            <div className="card p-6 border-l-4 border-slate-500">
+                                <h3 className="text-slate-500 dark:text-slate-400 text-sm font-medium uppercase tracking-wider">Private Docs</h3>
+                                <p className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{privateDocs.length}</p>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Public Documents Section */}
+                    {(!isOwnProfile || publicDocs.length > 0) && (
+                        <div className="card-glass p-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                    <FaFileAlt className="text-violet-500" /> Public Documents
+                                </h3>
+                            </div>
+
+                            {docsLoading ? (
+                                <div className="text-slate-500 animate-pulse">Loading documents...</div>
+                            ) : publicDocs.length > 0 ? (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {publicDocs.map(doc => (
+                                        <DocumentCard
+                                            key={doc._id}
+                                            doc={{ ...doc, readOnly: !isOwnProfile }}
+                                            onDelete={isOwnProfile ? (id) => console.log("Delete", id) : undefined}
+                                            onUpdate={isOwnProfile ? (d) => console.log("Update", d) : undefined}
+                                        />
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-slate-500 dark:text-slate-400 text-sm italic">
+                                    No public documents to show.
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Private Documents Section (Only for Owner) */}
+                    {isOwnProfile && (
+                        <div className="card-glass p-6 border-l-4 border-slate-500">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                    <FaLock className="text-slate-500" /> Private Documents
+                                </h3>
+                            </div>
+
+                            {docsLoading ? (
+                                <div className="text-slate-500 animate-pulse">Loading documents...</div>
+                            ) : privateDocs.length > 0 ? (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {privateDocs.map(doc => (
+                                        <DocumentCard
+                                            key={doc._id}
+                                            doc={{ ...doc, readOnly: false }}
+                                            onDelete={(id) => console.log("Delete", id)}
+                                            onUpdate={(d) => console.log("Update", d)}
+                                        />
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-slate-500 dark:text-slate-400 text-sm italic">
+                                    No private documents found.
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default UserProfile;

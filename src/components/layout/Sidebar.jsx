@@ -16,7 +16,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         { path: '/dashboard', label: 'Dashboard', icon: <FaHome /> },
         { path: '/projects', label: 'Projects', icon: <FaProjectDiagram /> },
         { path: '/tasks', label: 'My Tasks', icon: <FaTasks /> },
-        { path: '/docs', label: 'Documentation', icon: <FaBook /> },
+        { path: '/docs', label: 'Documents', icon: <FaBook /> },
         { path: '/settings', label: 'Settings', icon: <FaCog /> },
     ];
 

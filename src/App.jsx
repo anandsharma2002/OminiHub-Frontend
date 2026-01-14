@@ -9,7 +9,12 @@ import Home from './pages/Home';
 import Login from './pages/Auth/Login';
 import Signup from './pages/Auth/Signup';
 import Dashboard from './pages/Dashboard/Dashboard';
+import Documents from './pages/Documents';
+import Settings from './pages/Settings';
+import Profile from './pages/Profile';
+import UserProfile from './pages/UserProfile';
 
+import DashboardLayout from './components/layout/DashboardLayout';
 import { ThemeProvider } from './context/ThemeContext';
 
 function App() {
@@ -27,7 +32,13 @@ function App() {
 
                             {/* Protected Routes */}
                             <Route element={<ProtectedRoute />}>
-                                <Route path="/dashboard" element={<Dashboard />} />
+                                <Route element={<DashboardLayout />}>
+                                    <Route path="/dashboard" element={<Dashboard />} />
+                                    <Route path="/docs" element={<Documents />} />
+                                    <Route path="/settings" element={<Settings />} />
+                                    <Route path="/profile" element={<Profile />} />
+                                    <Route path="/user/:id" element={<UserProfile />} />
+                                </Route>
                             </Route>
 
                             {/* 404 Route */}

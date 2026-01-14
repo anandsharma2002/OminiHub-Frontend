@@ -6,6 +6,8 @@ import { FaRocket, FaUser, FaEnvelope, FaLock, FaGoogle, FaGithub } from 'react-
 const Signup = () => {
     const [formData, setFormData] = useState({
         username: '',
+        firstName: '',
+        lastName: '',
         email: '',
         password: ''
     });
@@ -21,7 +23,7 @@ const Signup = () => {
         e.preventDefault();
         setError('');
         try {
-            await signup(formData.username, formData.email, formData.password);
+            await signup(formData.username, formData.email, formData.password, formData.firstName, formData.lastName);
             navigate('/dashboard');
         } catch (err) {
             setError(err.response?.data?.message || 'Signup failed');
@@ -90,6 +92,26 @@ const Signup = () => {
                                 onChange={handleChange}
                                 required
                             />
+                            <div className="grid grid-cols-2 gap-4">
+                                <FormInput
+                                    icon={<FaUser />}
+                                    name="firstName"
+                                    type="text"
+                                    placeholder="First Name"
+                                    value={formData.firstName}
+                                    onChange={handleChange}
+                                    required
+                                />
+                                <FormInput
+                                    icon={<FaUser />}
+                                    name="lastName"
+                                    type="text"
+                                    placeholder="Last Name"
+                                    value={formData.lastName}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
                             <FormInput
                                 icon={<FaEnvelope />}
                                 name="email"
