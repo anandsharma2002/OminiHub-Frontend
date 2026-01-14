@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/OminiHub-Frontend/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OmniHub Frontend</title>
+  <script>
+    (function () {
+      try {
+        const savedTheme = localStorage.getItem('theme');
+        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        if (savedTheme === 'dark' || (!savedTheme && systemDark)) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      } catch (e) {
+        console.error('Theme script failed', e);
+      }
+    })();
+  </script>
+  <script type="module" crossorigin src="/OminiHub-Frontend/assets/index-DcqGHth_.js"></script>
+  <link rel="stylesheet" crossorigin href="/OminiHub-Frontend/assets/index-BY5jRq6a.css">
+</head>
+
+<body>
+  <div id="root"></div>
+</body>
+
+</html>
