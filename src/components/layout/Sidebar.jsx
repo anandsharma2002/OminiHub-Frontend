@@ -1,14 +1,19 @@
 import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom';
-import { FaHome, FaProjectDiagram, FaTasks, FaBook, FaCog, FaSignOutAlt, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { NavLink, useLocation } from 'react-router-dom';
+import { FaHome, FaProjectDiagram, FaTasks, FaBook, FaCog, FaSignOutAlt, FaChevronLeft, FaChevronRight, FaTimes } from 'react-icons/fa';
 import useAuth from '../../hooks/useAuth';
 
-const Sidebar = () => {
-    const [collapsed, setCollapsed] = useState(false);
+const Sidebar = ({ isOpen, onClose }) => {
+    const [isLocked, setIsLocked] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
     const { logout } = useAuth();
+    const location = useLocation(); // Re-add useLocation for active check optimization if needed
+
+    // Sidebar is collapsed if neither locked nor hovered (Desktop only logic)
+    const collapsed = !isLocked && !isHovered;
 
     const menuItems = [
-        { path: '/dashboard', label: 'Overview', icon: <FaHome /> },
+        { path: '/dashboard', label: 'Dashboard', icon: <FaHome /> },
         { path: '/projects', label: 'Projects', icon: <FaProjectDiagram /> },
         { path: '/tasks', label: 'My Tasks', icon: <FaTasks /> },
         { path: '/docs', label: 'Documentation', icon: <FaBook /> },
@@ -16,61 +21,97 @@ const Sidebar = () => {
     ];
 
     return (
-        <aside className={`h-screen sticky top-0 transition-all duration-300 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col z-40 ${collapsed ? 'w-20' : 'w-64'}`}>
+        <>
+            {/* Mobile Backdrop */}
+            {isOpen && (
+                <div
+                    className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-30 md:hidden"
+                    onClick={onClose}
+                ></div>
+            )}
 
-            {/* Header */}
-            <div className="h-[var(--nav-height)] flex items-center justify-between px-6 border-b border-slate-200 dark:border-slate-800">
-                {!collapsed && (
-                    <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-400 dark:to-indigo-400">
-                        OmniHub
-                    </span>
-                )}
-                <button
-                    onClick={() => setCollapsed(!collapsed)}
-                    className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
-                >
-                    {collapsed ? <FaChevronRight /> : <FaChevronLeft />}
-                </button>
-            </div>
+            {/* Sidebar Container */}
+            <aside
+                className={`
+                    fixed inset-y-0 left-0 z-40 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col transition-all duration-300 ease-in-out
+                    ${isOpen ? 'translate-x-0' : '-translate-x-full'} 
+                    md:translate-x-0 md:sticky md:top-[var(--nav-height)] md:h-[calc(100vh-var(--nav-height))]
+                    ${collapsed ? 'md:w-20' : 'md:w-64'}
+                    w-64 shadow-2xl md:shadow-none
+                `}
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+            >
 
-            {/* Navigation */}
-            <div className="flex-1 py-6 flex flex-col space-y-1 px-3">
-                {menuItems.map((item) => (
-                    <NavLink
-                        key={item.path}
-                        to={item.path}
-                        className={({ isActive }) => `
-                            flex items-center px-3 py-3 rounded-lg transition-all duration-200 font-medium group
-                            ${isActive
-                                ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400'
-                                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'
-                            }
-                        `}
-                    >
-                        <span className="text-xl">{item.icon}</span>
-                        {!collapsed && <span className="ml-3">{item.label}</span>}
+                {/* Header */}
+                <div className="h-[var(--nav-height)] flex items-center justify-between px-6 border-b border-slate-200 dark:border-slate-800">
+                    {/* Mobile Close Button */}
+                    <div className="md:hidden flex items-center justify-between w-full">
+                        <span className="font-bold text-lg text-slate-800 dark:text-white">Menu</span>
+                        <button onClick={onClose} className="text-slate-500 hover:text-red-500">
+                            <FaTimes />
+                        </button>
+                    </div>
 
-                        {/* Tooltip for collapsed mode */}
-                        {collapsed && (
-                            <div className="absolute left-full ml-2 px-2 py-1 bg-slate-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 transition-opacity">
+                    {/* Desktop Lock Toggle */}
+                    <div className="hidden md:flex w-full justify-end">
+                        <button
+                            onClick={() => setIsLocked(!isLocked)}
+                            className={`p-1.5 rounded-lg transition-colors ${isLocked
+                                ? 'bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400'
+                                : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+                                }`}
+                            title={isLocked ? "Unlock Sidebar (Auto-collapse)" : "Lock Sidebar Open"}
+                        >
+                            {isLocked ? <FaChevronLeft /> : <FaChevronRight />}
+                        </button>
+                    </div>
+                </div>
+
+                {/* Navigation */}
+                <div className="flex-1 py-6 flex flex-col space-y-1 px-3 overflow-y-auto">
+                    {menuItems.map((item) => (
+                        <NavLink
+                            key={item.path}
+                            to={item.path}
+                            onClick={() => onClose()} // Close drawer on navigation (mobile)
+                            className={({ isActive }) => `
+                                flex items-center px-3 py-3 rounded-lg transition-all duration-200 font-medium group
+                                ${isActive
+                                    ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400'
+                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'
+                                }
+                            `}
+                        >
+                            <span className="text-xl min-w-[20px]">{item.icon}</span>
+
+                            {/* Mobile: Always Show Label. Desktop: Hide if collapsed */}
+                            <span className={`ml-3 whitespace-nowrap md:transition-opacity md:duration-200 ${collapsed ? 'md:opacity-0 md:hidden' : 'md:opacity-100'}`}>
                                 {item.label}
-                            </div>
-                        )}
-                    </NavLink>
-                ))}
-            </div>
+                            </span>
 
-            {/* User Footer */}
-            <div className="p-4 border-t border-slate-200 dark:border-slate-800">
-                <button
-                    onClick={logout}
-                    className={`flex items-center w-full px-3 py-2 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors ${collapsed ? 'justify-center' : ''}`}
-                >
-                    <FaSignOutAlt />
-                    {!collapsed && <span className="ml-3 font-medium">Log Out</span>}
-                </button>
-            </div>
-        </aside>
+                            {/* Tooltip for collapsed mode (Desktop Only) */}
+                            {collapsed && (
+                                <div className="hidden md:block absolute left-full ml-2 px-2 py-1 bg-slate-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 transition-opacity">
+                                    {item.label}
+                                </div>
+                            )}
+                        </NavLink>
+                    ))}
+                </div>
+
+                {/* User Footer */}
+                <div className="p-4 border-t border-slate-200 dark:border-slate-800">
+                    <button
+                        onClick={logout}
+                        className={`flex items-center w-full px-3 py-2 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors ${collapsed ? 'md:justify-center' : ''}`}
+                    >
+                        <FaSignOutAlt />
+                        <span className={`ml-3 font-medium ${collapsed ? 'md:hidden' : ''}`}>Log Out</span>
+                    </button>
+                </div>
+            </aside>
+        </>
     );
 };
 

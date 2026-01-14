@@ -29,7 +29,7 @@ const Signup = () => {
     };
 
     return (
-        <div className="min-h-screen flex bg-slate-50 dark:bg-[#020617]">
+        <div className="min-h-[calc(100vh-var(--nav-height))] flex bg-slate-50 dark:bg-[#020617]">
             {/* Left Side - Visual */}
             <div className="hidden lg:flex w-1/2 bg-gradient-to-tr from-indigo-900 to-violet-600 relative overflow-hidden items-center justify-center p-12">
                 <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>

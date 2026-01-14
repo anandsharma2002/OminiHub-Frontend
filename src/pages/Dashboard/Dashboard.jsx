@@ -1,23 +1,35 @@
-import React from 'react';
+import React, { useState } from 'react';
 import useAuth from '../../hooks/useAuth';
 import Sidebar from '../../components/layout/Sidebar';
-import { FaProjectDiagram, FaCheckCircle, FaClock, FaPlus } from 'react-icons/fa';
+import { FaProjectDiagram, FaCheckCircle, FaClock, FaPlus, FaBars } from 'react-icons/fa';
 
 const Dashboard = () => {
     const { user } = useAuth();
+    const [isSidebarOpen, setSidebarOpen] = useState(false);
 
     return (
-        <div className="flex min-h-screen bg-slate-50 dark:bg-[#020617]">
-            <Sidebar />
+        <div className="flex min-h-[calc(100vh-var(--nav-height))] bg-slate-50 dark:bg-[#020617]">
+            {/* Sidebar (Responsive) */}
+            <Sidebar isOpen={isSidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-            <main className="flex-1 p-8 overflow-y-auto h-screen">
-                <header className="flex justify-between items-center mb-10">
-                    <div>
-                        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Dashboard</h1>
-                        <p className="text-slate-500 dark:text-slate-400 mt-1">Welcome back, {user?.username}!</p>
+            <main className="flex-1 p-4 md:p-8 w-full">
+                <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 space-y-4 md:space-y-0">
+                    <div className="flex items-center w-full md:w-auto">
+                        {/* Mobile Sidebar Toggle */}
+                        <button
+                            className="md:hidden mr-4 text-slate-600 dark:text-slate-300 hover:text-violet-600"
+                            onClick={() => setSidebarOpen(true)}
+                        >
+                            <FaBars size={24} />
+                        </button>
+
+                        <div>
+                            <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">Dashboard</h1>
+                            <p className="text-slate-500 dark:text-slate-400 mt-1">Welcome back, {user?.username}!</p>
+                        </div>
                     </div>
 
-                    <button className="btn-primary flex items-center space-x-2">
+                    <button className="btn-primary flex items-center space-x-2 w-full md:w-auto justify-center">
                         <FaPlus /> <span>New Project</span>
                     </button>
                 </header>
@@ -62,11 +74,13 @@ const Dashboard = () => {
                     <div className="card-glass p-6">
                         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">My Profile</h3>
                         <div className="flex items-center space-x-4 mb-6">
-                            <div className="w-16 h-16 rounded-full bg-violet-100 flex items-center justify-center text-2xl font-bold text-violet-600">
+                            <div className="shrink-0 w-16 h-16 rounded-full bg-violet-100 flex items-center justify-center text-2xl font-bold text-violet-600">
                                 {user?.username?.[0]?.toUpperCase()}
                             </div>
-                            <div>
-                                <p className="text-slate-900 dark:text-white font-medium text-lg">{user?.email}</p>
+                            <div className="min-w-0 flex-1">
+                                <p className="text-slate-900 dark:text-white font-medium text-lg truncate" title={user?.email}>
+                                    {user?.email}
+                                </p>
                                 <p className="text-slate-500 text-sm">Role: {user?.role || 'User'}</p>
                             </div>
                         </div>

@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@variant dark (&:where(.dark, .dark *));
+
 @theme {
     --color-primary: #7c3aed;
     /* Violet 600 */
@@ -12,7 +14,7 @@
 
 /* GLOBAL CSS VARIABLES */
 :root {
-    --nav-height: 70px;
+    --nav-height: 64px;
 }
 
 /* GLOBAL COMPONENT CLASSES (Reusability Layer) */
@@ -46,5 +48,14 @@
 
 /* Global Reset/Typography */
 body {
-    @apply bg-slate-50 dark:bg-[#020617] text-slate-900 dark:text-slate-100 antialiased selection:bg-violet-500/30;
+    @apply antialiased selection:bg-violet-500/30;
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE/Edge */
+}
+
+/* Hide scrollbar for Chrome/Safari/Opera */
+body::-webkit-scrollbar {
+    display: none;
 }

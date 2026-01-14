@@ -22,7 +22,7 @@ const Login = () => {
     };
 
     return (
-        <div className="min-h-screen flex bg-slate-50 dark:bg-[#020617]">
+        <div className="min-h-[calc(100vh-var(--nav-height))] flex bg-slate-50 dark:bg-[#020617]">
             {/* Left Side - Visual */}
             <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-violet-600 to-indigo-900 relative overflow-hidden items-center justify-center p-12">
                 <div className="absolute top-0 left-0 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>

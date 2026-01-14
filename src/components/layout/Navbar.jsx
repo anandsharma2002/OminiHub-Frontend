@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
+import ThemeToggle from '../common/ThemeToggle';
 import { FaBars, FaTimes, FaRocket } from 'react-icons/fa';
 
 const Navbar = () => {
@@ -23,7 +24,7 @@ const Navbar = () => {
     );
 
     return (
-        <nav className="fixed w-full z-50 transition-all duration-300 bg-white/70 dark:bg-[#020617]/70 backdrop-blur-lg border-b border-slate-200/50 dark:border-slate-800/50 h-[var(--nav-height)]">
+        <nav className="sticky top-0 w-full z-50 transition-all duration-300 bg-white/70 dark:bg-[#020617]/70 backdrop-blur-lg border-b border-slate-200/50 dark:border-slate-800/50 h-[var(--nav-height)]">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
                 <div className="flex justify-between items-center h-full">
                     {/* Logo */}
@@ -44,8 +45,9 @@ const Navbar = () => {
                         <NavLink to="/dosc">Docs</NavLink>
                     </div>
 
-                    {/* Desktop Auth Buttons */}
+                    {/* Desktop Auth Buttons & Theme */}
                     <div className="hidden md:flex items-center space-x-4">
+                        <ThemeToggle />
                         {user ? (
                             <>
                                 <Link to="/dashboard" className="text-slate-600 dark:text-slate-300 font-medium hover:text-violet-600 transition-colors">
@@ -70,8 +72,9 @@ const Navbar = () => {
                         )}
                     </div>
 
-                    {/* Mobile Menu Button */}
-                    <div className="md:hidden flex items-center">
+                    {/* Mobile Menu Button & Theme */}
+                    <div className="md:hidden flex items-center space-x-4">
+                        <ThemeToggle />
                         <button
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
                             className="text-slate-600 dark:text-slate-300 hover:text-violet-600 focus:outline-none"
@@ -84,7 +87,7 @@ const Navbar = () => {
 
             {/* Mobile Menu Dropdown */}
             {isMenuOpen && (
-                <div className="md:hidden absolute top-[var(--nav-height)] left-0 w-full bg-white dark:bg-[#020617] border-b border-slate-200 dark:border-slate-800 shadow-xl animate-fade-in">
+                <div className="md:hidden absolute top-full left-0 w-full bg-white dark:bg-[#020617] border-b border-slate-200 dark:border-slate-800 shadow-xl animate-fade-in z-40">
                     <div className="px-4 pt-4 pb-6 space-y-4">
                         <Link to="/" className="block text-slate-600 dark:text-slate-300 font-medium hover:text-violet-600" onClick={() => setIsMenuOpen(false)}>Home</Link>
                         <Link to="/features" className="block text-slate-600 dark:text-slate-300 font-medium hover:text-violet-600" onClick={() => setIsMenuOpen(false)}>Features</Link>
