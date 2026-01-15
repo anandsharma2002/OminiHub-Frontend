@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import Navbar from './components/layout/Navbar';
@@ -22,7 +22,7 @@ function App() {
     return (
         <AuthProvider>
             <ThemeProvider>
-                <Router>
+                <HashRouter>
                     <div className="min-h-screen transition-colors duration-300 bg-slate-50 dark:bg-[#020617] text-slate-900 dark:text-slate-100">
                         <Navbar />
                         <Routes>
@@ -47,7 +47,7 @@ function App() {
                             <Route path="*" element={<Home />} />
                         </Routes>
                     </div>
-                </Router>
+                </HashRouter>
             </ThemeProvider>
         </AuthProvider>
     );
