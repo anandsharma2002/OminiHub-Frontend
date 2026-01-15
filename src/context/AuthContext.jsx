@@ -33,20 +33,19 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     // Login Action
-    const login = async (email, password) => {
+    const login = async (credentials) => {
+        setLoading(true);
         try {
-            const res = await authAPI.login({ email, password });
-            if (res.token) {
-                localStorage.setItem('token', res.token);
-                setUser(res.data.user);
-                setIsAuthenticated(true);
-                return { success: true };
-            }
+            const data = await authAPI.login(credentials);
+            // localStorage.setItem('token', data.token); // If manual handling
+            setIsAuthenticated(true);
+            setUser(data.data.user); // data.data.user because of API response structure
+            return data;
         } catch (error) {
-            return {
-                success: false,
-                message: error.response?.data?.message || 'Login failed'
-            };
+            console.error('Login error:', error.response?.data?.message);
+            throw error;
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -54,6 +53,17 @@ export const AuthProvider = ({ children }) => {
     const signup = async (username, email, password, firstName, lastName) => {
         try {
             const res = await authAPI.signup({ username, email, password, firstName, lastName });
+            // Signup now sends email, does not login immediately
+            return { success: true, message: res.message };
+        } catch (error) {
+            throw error; // Let component handle error
+        }
+    };
+
+    // Verify Email Action
+    const verifyEmail = async (email, code) => {
+        try {
+            const res = await authAPI.verifyEmail({ email, code });
             if (res.token) {
                 localStorage.setItem('token', res.token);
                 setUser(res.data.user);
@@ -61,10 +71,7 @@ export const AuthProvider = ({ children }) => {
                 return { success: true };
             }
         } catch (error) {
-            return {
-                success: false,
-                message: error.response?.data?.message || 'Signup failed'
-            };
+            throw error;
         }
     };
 
@@ -82,6 +89,7 @@ export const AuthProvider = ({ children }) => {
             isAuthenticated,
             login,
             signup,
+            verifyEmail,
             logout
         }}>
             {children}

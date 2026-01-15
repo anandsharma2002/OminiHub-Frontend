@@ -11,8 +11,11 @@ const Signup = () => {
         email: '',
         password: ''
     });
+    const [verificationCode, setVerificationCode] = useState('');
+    const [step, setStep] = useState('signup'); // 'signup' or 'verify'
     const [error, setError] = useState('');
-    const { signup } = useAuth();
+    const [loading, setLoading] = useState(false);
+    const { signup, verifyEmail } = useAuth();
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -22,11 +25,30 @@ const Signup = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+        setLoading(true);
         try {
-            await signup(formData.username, formData.email, formData.password, formData.firstName, formData.lastName);
+            const res = await signup(formData.username, formData.email, formData.password, formData.firstName, formData.lastName);
+            if (res.success) {
+                setStep('verify');
+            }
+        } catch (err) {
+            setError(err.response?.data?.message || err.message || 'Signup failed');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleVerify = async (e) => {
+        e.preventDefault();
+        setError('');
+        setLoading(true);
+        try {
+            await verifyEmail(formData.email, verificationCode);
             navigate('/dashboard');
         } catch (err) {
-            setError(err.response?.data?.message || 'Signup failed');
+            setError(err.response?.data?.message || 'Verification failed');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -66,13 +88,22 @@ const Signup = () => {
                         <Link to="/" className="lg:hidden inline-flex items-center space-x-2 text-violet-600 mb-8">
                             <FaRocket /> <span>OmniHub</span>
                         </Link>
-                        <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Create your account</h2>
-                        <p className="mt-2 text-slate-600 dark:text-slate-400">
-                            Already have an account?
-                            <Link to="/login" className="text-violet-600 hover:text-violet-500 font-semibold ml-1">
-                                Log in
-                            </Link>
-                        </p>
+                        <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
+                            {step === 'signup' ? 'Create your account' : 'Verify Email'}
+                        </h2>
+                        {step === 'signup' && (
+                            <p className="mt-2 text-slate-600 dark:text-slate-400">
+                                Already have an account?
+                                <Link to="/login" className="text-violet-600 hover:text-violet-500 font-semibold ml-1">
+                                    Log in
+                                </Link>
+                            </p>
+                        )}
+                        {step === 'verify' && (
+                            <p className="mt-2 text-slate-600 dark:text-slate-400">
+                                We sent a 6-digit code to <strong>{formData.email}</strong>.
+                            </p>
+                        )}
                     </div>
 
                     {error && (
@@ -81,87 +112,112 @@ const Signup = () => {
                         </div>
                     )}
 
-                    <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-                        <div className="space-y-4">
-                            <FormInput
-                                icon={<FaUser />}
-                                name="username"
-                                type="text"
-                                placeholder="Username"
-                                value={formData.username}
-                                onChange={handleChange}
-                                required
-                            />
+                    {step === 'signup' ? (
+                        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+                            <div className="space-y-4">
+                                <FormInput
+                                    icon={<FaUser />}
+                                    name="username"
+                                    type="text"
+                                    placeholder="Username"
+                                    value={formData.username}
+                                    onChange={handleChange}
+                                    required
+                                />
+                                <div className="grid grid-cols-2 gap-4">
+                                    <FormInput
+                                        icon={<FaUser />}
+                                        name="firstName"
+                                        type="text"
+                                        placeholder="First Name"
+                                        value={formData.firstName}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                    <FormInput
+                                        icon={<FaUser />}
+                                        name="lastName"
+                                        type="text"
+                                        placeholder="Last Name"
+                                        value={formData.lastName}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                </div>
+                                <FormInput
+                                    icon={<FaEnvelope />}
+                                    name="email"
+                                    type="email"
+                                    placeholder="Email address"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    required
+                                />
+                                <FormInput
+                                    icon={<FaLock />}
+                                    name="password"
+                                    type="password"
+                                    placeholder="Password (min 6 chars)"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    minLength="6"
+                                    required
+                                />
+                            </div>
+
+                            <div className="flex items-start">
+                                <div className="flex items-center h-5">
+                                    <input id="terms" type="checkbox" required className="h-4 w-4 text-violet-600 focus:ring-violet-500 border-slate-300 rounded" />
+                                </div>
+                                <div className="ml-3 text-sm">
+                                    <label htmlFor="terms" className="font-medium text-slate-700 dark:text-slate-300">
+                                        I agree to the <a href="#" className="text-violet-600 hover:text-violet-500">Terms of Service</a> and <a href="#" className="text-violet-600 hover:text-violet-500">Privacy Policy</a>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <button type="submit" disabled={loading} className="btn-primary w-full py-3 shadow-violet-500/20">
+                                {loading ? 'Creating...' : 'Create Account'}
+                            </button>
+
+                            <div className="relative my-8">
+                                <div className="absolute inset-0 flex items-center">
+                                    <div className="w-full border-t border-slate-200 dark:border-slate-800"></div>
+                                </div>
+                                <div className="relative flex justify-center text-sm">
+                                    <span className="px-2 bg-slate-50 dark:bg-[#020617] text-slate-500">Or sign up with</span>
+                                </div>
+                            </div>
+
                             <div className="grid grid-cols-2 gap-4">
+                                <SocialButton icon={<FaGoogle />} label="Google" />
+                                <SocialButton icon={<FaGithub />} label="GitHub" />
+                            </div>
+                        </form>
+                    ) : (
+                        <form className="mt-8 space-y-6" onSubmit={handleVerify}>
+                            <div className="space-y-4">
                                 <FormInput
-                                    icon={<FaUser />}
-                                    name="firstName"
+                                    icon={<FaLock />}
+                                    name="code"
                                     type="text"
-                                    placeholder="First Name"
-                                    value={formData.firstName}
-                                    onChange={handleChange}
+                                    placeholder="6-Digit Code"
+                                    value={verificationCode}
+                                    onChange={(e) => setVerificationCode(e.target.value)}
                                     required
                                 />
-                                <FormInput
-                                    icon={<FaUser />}
-                                    name="lastName"
-                                    type="text"
-                                    placeholder="Last Name"
-                                    value={formData.lastName}
-                                    onChange={handleChange}
-                                    required
-                                />
                             </div>
-                            <FormInput
-                                icon={<FaEnvelope />}
-                                name="email"
-                                type="email"
-                                placeholder="Email address"
-                                value={formData.email}
-                                onChange={handleChange}
-                                required
-                            />
-                            <FormInput
-                                icon={<FaLock />}
-                                name="password"
-                                type="password"
-                                placeholder="Password (min 6 chars)"
-                                value={formData.password}
-                                onChange={handleChange}
-                                minLength="6"
-                                required
-                            />
-                        </div>
-
-                        <div className="flex items-start">
-                            <div className="flex items-center h-5">
-                                <input id="terms" type="checkbox" required className="h-4 w-4 text-violet-600 focus:ring-violet-500 border-slate-300 rounded" />
-                            </div>
-                            <div className="ml-3 text-sm">
-                                <label htmlFor="terms" className="font-medium text-slate-700 dark:text-slate-300">
-                                    I agree to the <a href="#" className="text-violet-600 hover:text-violet-500">Terms of Service</a> and <a href="#" className="text-violet-600 hover:text-violet-500">Privacy Policy</a>
-                                </label>
-                            </div>
-                        </div>
-
-                        <button type="submit" className="btn-primary w-full py-3 shadow-violet-500/20">
-                            Create Account
-                        </button>
-
-                        <div className="relative my-8">
-                            <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t border-slate-200 dark:border-slate-800"></div>
-                            </div>
-                            <div className="relative flex justify-center text-sm">
-                                <span className="px-2 bg-slate-50 dark:bg-[#020617] text-slate-500">Or sign up with</span>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <SocialButton icon={<FaGoogle />} label="Google" />
-                            <SocialButton icon={<FaGithub />} label="GitHub" />
-                        </div>
-                    </form>
+                            <p className="text-sm text-center text-slate-500">
+                                Check your email (and spam folder) for the code.
+                            </p>
+                            <button type="submit" disabled={loading} className="btn-primary w-full py-3 shadow-violet-500/20">
+                                {loading ? 'Verifying...' : 'Verify Email'}
+                            </button>
+                            <button type="button" onClick={() => setStep('signup')} className="w-full py-3 text-slate-600 dark:text-slate-400 hover:underline">
+                                Back to Signup
+                            </button>
+                        </form>
+                    )}
                 </div>
             </div>
         </div>

@@ -2,6 +2,7 @@
   "name": "ominihub-frontend",
   "private": true,
   "version": "0.0.0",
+  "homepage": "https://anandsharma2002.github.io/OminiHub-Frontend",
   "type": "module",
   "scripts": {
     "dev": "vite",
