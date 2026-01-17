@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }) => {
         setLoading(true);
         try {
             const data = await authAPI.login(credentials);
-            // localStorage.setItem('token', data.token); // If manual handling
+            localStorage.setItem('token', data.token);
             setIsAuthenticated(true);
             setUser(data.data.user); // data.data.user because of API response structure
             return data;
