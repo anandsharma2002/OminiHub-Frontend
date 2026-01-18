@@ -1,8 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-
 import { FaGithub, FaStar, FaCodeBranch, FaCircle } from 'react-icons/fa';
-import axios from 'axios';
+import api from '../../api/axios';
 
 const GitHubSection = ({ username, isOwner, visibleRepos = [], onToggleRepo }) => {
     const [data, setData] = useState(null);
@@ -15,7 +14,7 @@ const GitHubSection = ({ username, isOwner, visibleRepos = [], onToggleRepo }) =
         const fetchData = async () => {
             try {
                 // 1. Fetch Profile & Repos from our Backend
-                const res = await axios.get(`http://localhost:5000/api/github/${username}`);
+                const res = await api.get(`/github/${username}`);
                 setData(res.data);
 
 
@@ -102,14 +101,14 @@ const GitHubSection = ({ username, isOwner, visibleRepos = [], onToggleRepo }) =
                                                 <h4 className="font-bold text-violet-600 dark:text-violet-400 group-hover:text-violet-500 truncate flex-1" title={repo.name}>
                                                     {repo.name}
                                                 </h4>
-                                                
+
                                                 <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
                                                     {isOwner ? (
-                                                        <div 
+                                                        <div
                                                             className={`
                                                                 flex items-center gap-2 px-2 py-1 rounded-full border transition-all cursor-pointer shadow-sm
-                                                                ${isVisible 
-                                                                    ? 'bg-violet-50/80 border-violet-200 dark:bg-violet-900/20 dark:border-violet-700/50' 
+                                                                ${isVisible
+                                                                    ? 'bg-violet-50/80 border-violet-200 dark:bg-violet-900/20 dark:border-violet-700/50'
                                                                     : 'bg-slate-50 border-slate-200 dark:bg-slate-800 dark:border-slate-700'}
                                                             `}
                                                             onClick={(e) => {
