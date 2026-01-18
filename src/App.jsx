@@ -13,7 +13,9 @@ import Dashboard from './pages/Dashboard/Dashboard';
 import Documents from './pages/Documents';
 import Settings from './pages/Settings';
 import Profile from './pages/Profile';
+
 import UserProfile from './pages/UserProfile';
+import GitHubPage from './pages/GitHubPage';
 
 import DashboardLayout from './components/layout/DashboardLayout';
 import { ThemeProvider } from './context/ThemeContext';
@@ -39,6 +41,7 @@ function App() {
                                     <Route path="/docs" element={<Documents />} />
                                     <Route path="/settings" element={<Settings />} />
                                     <Route path="/profile" element={<Profile />} />
+                                    <Route path="/github" element={<GitHubPage />} />
                                     <Route path="/user/:id" element={<UserProfile />} />
                                 </Route>
                             </Route>

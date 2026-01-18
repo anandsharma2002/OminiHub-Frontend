@@ -90,7 +90,8 @@ export const AuthProvider = ({ children }) => {
             login,
             signup,
             verifyEmail,
-            logout
+            logout,
+            updateUser: setUser // Expose setUser to update user state from components
         }}>
             {children}
         </AuthContext.Provider>

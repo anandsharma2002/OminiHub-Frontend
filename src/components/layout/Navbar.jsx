@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
 import userAPI from '../../api/user';
 import { FaBars, FaTimes, FaRocket, FaSearch } from 'react-icons/fa';
+import ThemeToggle from '../common/ThemeToggle';
 
 const Navbar = () => {
     const { user } = useAuth();
@@ -113,8 +114,8 @@ const Navbar = () => {
                                         <ul>
                                             {searchResults.map(result => (
                                                 <li key={result._id}>
-                                                    <Link 
-                                                        to={`/user/${result._id}`} 
+                                                    <Link
+                                                        to={`/user/${result._id}`}
                                                         className="flex items-center space-x-3 p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                                                         onClick={clearSearch}
                                                     >
@@ -157,6 +158,7 @@ const Navbar = () => {
                             </>
                         ) : (
                             <>
+                                <ThemeToggle />
                                 <Link to="/login" className="text-slate-600 dark:text-slate-300 font-medium hover:text-violet-600 transition-colors">
                                     Log In
                                 </Link>
@@ -196,8 +198,8 @@ const Navbar = () => {
                         <Link to="/pricing" className="block text-slate-600 dark:text-slate-300 font-medium hover:text-violet-600" onClick={() => setIsMenuOpen(false)}>Pricing</Link>
 
                         <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex flex-col space-y-3">
-                             {/* Mobile Search Input */}
-                             {user && (
+                            {/* Mobile Search Input */}
+                            {user && (
                                 <div className="relative mb-4">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                                         <FaSearch />
@@ -218,8 +220,8 @@ const Navbar = () => {
                                                 <ul>
                                                     {searchResults.map(result => (
                                                         <li key={result._id}>
-                                                            <Link 
-                                                                to={`/user/${result._id}`} 
+                                                            <Link
+                                                                to={`/user/${result._id}`}
                                                                 className="flex items-center space-x-3 p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                                                                 onClick={() => { clearSearch(); setIsMenuOpen(false); }}
                                                             >
@@ -238,7 +240,7 @@ const Navbar = () => {
                                         </div>
                                     )}
                                 </div>
-                             )}
+                            )}
 
                             {user ? (
                                 <>
@@ -249,6 +251,9 @@ const Navbar = () => {
                                 </>
                             ) : (
                                 <>
+                                    <div className="flex justify-center py-2">
+                                        <ThemeToggle />
+                                    </div>
                                     <Link to="/login" className="block text-center w-full py-2 text-slate-600 dark:text-slate-300 font-medium" onClick={() => setIsMenuOpen(false)}>Log In</Link>
                                     <Link to="/signup" className="block text-center w-full btn-primary" onClick={() => setIsMenuOpen(false)}>Get Started</Link>
                                 </>

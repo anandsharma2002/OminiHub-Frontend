@@ -8,6 +8,14 @@ const userAPI = {
     getUserProfile: async (id) => {
         const response = await axios.get(`/users/${id}/profile`);
         return response.data;
+    },
+    updateProfile: async (formData) => {
+        const response = await axios.put('/users/profile', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        return response.data;
     }
 };
 

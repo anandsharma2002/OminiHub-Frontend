@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { FaHome, FaProjectDiagram, FaTasks, FaBook, FaCog, FaSignOutAlt, FaChevronLeft, FaChevronRight, FaTimes } from 'react-icons/fa';
+import { FaHome, FaProjectDiagram, FaTasks, FaBook, FaCog, FaSignOutAlt, FaChevronLeft, FaChevronRight, FaTimes, FaGithub } from 'react-icons/fa';
 import useAuth from '../../hooks/useAuth';
 
 const Sidebar = ({ isOpen, onClose }) => {
@@ -17,6 +17,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         { path: '/projects', label: 'Projects', icon: <FaProjectDiagram /> },
         { path: '/tasks', label: 'My Tasks', icon: <FaTasks /> },
         { path: '/docs', label: 'Documents', icon: <FaBook /> },
+        { path: '/github', label: 'GitHub', icon: <FaGithub /> },
         { path: '/settings', label: 'Settings', icon: <FaCog /> },
     ];
 

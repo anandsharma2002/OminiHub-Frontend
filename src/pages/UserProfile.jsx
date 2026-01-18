@@ -4,7 +4,9 @@ import userAPI from '../api/user';
 import docsApi from '../api/docs';
 import DocumentCard from '../components/documents/DocumentCard';
 import { useAuth } from '../context/AuthContext';
-import { FaUser, FaEnvelope, FaIdBadge, FaCalendarAlt, FaArrowLeft, FaFileAlt, FaLock } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaIdBadge, FaCalendarAlt, FaArrowLeft, FaFileAlt, FaLock, FaGithub, FaLinkedin, FaCode, FaGlobe } from 'react-icons/fa';
+
+import GitHubSection from '../components/profile/GitHubSection';
 
 const UserProfile = () => {
     const { id } = useParams();
@@ -19,7 +21,6 @@ const UserProfile = () => {
 
     // Check if viewing own profile
     const isOwnProfile = currentUser && (currentUser._id === id || (user && currentUser._id === user._id));
-
     // Filter documents
     const publicDocs = docs.filter(doc => doc.privacy === 'public');
     const privateDocs = docs.filter(doc => doc.privacy === 'private');
@@ -78,6 +79,15 @@ const UserProfile = () => {
 
     const joinDate = user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A';
 
+    // Helper to get icon for platform
+    const getPlatformIcon = (platform) => {
+        const p = platform.toLowerCase();
+        if (p.includes('github')) return <FaGithub />;
+        if (p.includes('linkedin')) return <FaLinkedin />;
+        if (p.includes('leetcode') || p.includes('codeforces')) return <FaCode />;
+        return <FaGlobe />; // Default
+    };
+
     return (
         <div className="page-container">
             <button
@@ -96,7 +106,15 @@ const UserProfile = () => {
 
                         <div className="relative z-10 mb-4">
                             <div className="w-32 h-32 rounded-full bg-violet-100 dark:bg-slate-800 border-4 border-white dark:border-slate-900 shadow-xl flex items-center justify-center text-5xl font-bold text-violet-600 dark:text-violet-400 overflow-hidden">
-                                {user.username?.[0]?.toUpperCase()}
+                                {user.profile?.image && user.profile.image !== 'default.jpg' ? (
+                                    <img
+                                        src={user.profile.image}
+                                        alt="Profile"
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    user.username?.[0]?.toUpperCase()
+                                )}
                             </div>
                         </div>
 
@@ -142,6 +160,37 @@ const UserProfile = () => {
                         </p>
                     </div>
 
+                    {/* Social Profiles */}
+                    {user.profile?.socialLinks?.length > 0 && (
+                        <div className="card-glass p-6">
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Social Profiles</h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                {user.profile.socialLinks.map((link, index) => {
+                                    const platform = typeof link === 'object' ? link.platform : 'Website';
+                                    const url = typeof link === 'object' ? link.url : link;
+
+                                    return (
+                                        <a
+                                            key={index}
+                                            href={url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center space-x-3 p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-violet-500 dark:hover:border-violet-500 transition-colors group"
+                                        >
+                                            <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 group-hover:text-violet-600 group-hover:bg-violet-50 dark:group-hover:bg-violet-900/20 transition-colors">
+                                                {getPlatformIcon(platform)}
+                                            </div>
+                                            <div>
+                                                <p className="font-medium text-slate-900 dark:text-white">{platform}</p>
+                                                <p className="text-xs text-slate-500 truncate max-w-[150px]">{url}</p>
+                                            </div>
+                                        </a>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="card p-6 border-l-4 border-violet-500">
                             <h3 className="text-slate-500 dark:text-slate-400 text-sm font-medium uppercase tracking-wider">Projects</h3>
@@ -158,6 +207,40 @@ const UserProfile = () => {
                             </div>
                         )}
                     </div>
+
+                    {/* GitHub Integration Section */}
+                    {(() => {
+                        const githubLink = user.profile?.socialLinks?.find(link => {
+                            if (!link) return false;
+                            const url = typeof link === 'object' ? link.url : link;
+                            return url && (url.includes('github.com') || (typeof link === 'object' && link.platform?.toLowerCase() === 'github'));
+                        });
+
+                        if (githubLink) {
+                            const url = typeof githubLink === 'object' ? githubLink.url : githubLink;
+                            // Extract username: match the last segment of the url
+                            // e.g., https://github.com/username or https://github.com/username/
+                            const match = url.match(/github\.com\/([^\/]+)\/?$/);
+
+                            let username = null;
+                            if (match && match[1]) {
+                                username = match[1];
+                            } else {
+                                // Try simple split if regex fails
+                                const parts = url.split('/').filter(Boolean);
+                                if (parts.length > 0) username = parts[parts.length - 1];
+                            }
+
+                            if (username) {
+                                return (
+                                    <div className="mt-8">
+                                        <GitHubSection username={username} />
+                                    </div>
+                                );
+                            }
+                        }
+                        return null;
+                    })()}
 
                     {/* Public Documents Section */}
                     {(!isOwnProfile || publicDocs.length > 0) && (
