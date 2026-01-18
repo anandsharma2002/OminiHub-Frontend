@@ -210,6 +210,10 @@ const UserProfile = () => {
 
                     {/* GitHub Integration Section */}
                     {(() => {
+                        // Check Visibility
+                        const showGithub = isOwnProfile || user.isGithubPublic;
+                        if (!showGithub) return null;
+
                         const githubLink = user.profile?.socialLinks?.find(link => {
                             if (!link) return false;
                             const url = typeof link === 'object' ? link.url : link;
@@ -234,7 +238,11 @@ const UserProfile = () => {
                             if (username) {
                                 return (
                                     <div className="mt-8">
-                                        <GitHubSection username={username} />
+                                        <GitHubSection
+                                            username={username}
+                                            isOwner={isOwnProfile}
+                                            visibleRepos={user.visibleRepositories || []}
+                                        />
                                     </div>
                                 );
                             }

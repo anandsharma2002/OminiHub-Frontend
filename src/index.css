@@ -55,7 +55,31 @@ body {
     /* IE/Edge */
 }
 
-/* Hide scrollbar for Chrome/Safari/Opera */
+/* Hide scrollbar for Chrome/Safari/Opera globally */
 body::-webkit-scrollbar {
     display: none;
+}
+
+/* Sidebar Specific Scrollbar */
+.sidebar-scroll {
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #7c3aed transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+    width: 2px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, #7c3aed, #4f46e5);
+    border-radius: 10px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(to bottom, #8b5cf6, #6366f1);
 }

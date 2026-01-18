@@ -18,7 +18,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         { path: '/tasks', label: 'My Tasks', icon: <FaTasks /> },
         { path: '/docs', label: 'Documents', icon: <FaBook /> },
         { path: '/github', label: 'GitHub', icon: <FaGithub /> },
-        { path: '/settings', label: 'Settings', icon: <FaCog /> },
+        { path: '/settings', label: 'Settings', icon: <FaCog /> }
     ];
 
     return (
@@ -70,7 +70,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                 </div>
 
                 {/* Navigation */}
-                <div className="flex-1 py-6 flex flex-col space-y-1 px-3 overflow-y-auto">
+                <div className="flex-1 py-6 flex flex-col space-y-1 px-3 sidebar-scroll">
                     {menuItems.map((item) => (
                         <NavLink
                             key={item.path}

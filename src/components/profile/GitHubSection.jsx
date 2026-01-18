@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { FaGithub, FaStar, FaCodeBranch, FaCircle } from 'react-icons/fa';
 import axios from 'axios';
 
-const GitHubSection = ({ username }) => {
+const GitHubSection = ({ username, isOwner, visibleRepos = [], onToggleRepo }) => {
     const [data, setData] = useState(null);
     const [visibleCount, setVisibleCount] = useState(6);
 
@@ -45,6 +45,11 @@ const GitHubSection = ({ username }) => {
 
     const { profile, repos } = data;
 
+    // Filter repos if not owner
+    const displayedRepos = isOwner
+        ? repos
+        : repos.filter(repo => visibleRepos.includes(String(repo.id)));
+
     return (
         <div className="space-y-6">
             {/* Stats Header */}
@@ -77,70 +82,113 @@ const GitHubSection = ({ username }) => {
             </div>
 
             {/* Repositories */}
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white px-2">Top Repositories</h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {repos.slice(0, visibleCount).map(repo => (
-                    <a
-                        key={repo.id}
-                        href={repo.html_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="card-glass p-5 hover:border-violet-500 transition-colors group flex flex-col justify-between"
-                    >
-                        <div>
-                            <div className="flex justify-between items-start mb-2">
-                                <h4 className="font-bold text-violet-600 dark:text-violet-400 group-hover:text-violet-500 truncate pr-2">
-                                    {repo.name}
-                                </h4>
-                                <span className="text-xs px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
-                                    {repo.visibility}
-                                </span>
-                            </div>
-                            <p className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2 mb-4 h-10">
-                                {repo.description || 'No description available'}
-                            </p>
-                        </div>
+            {displayedRepos.length > 0 && (
+                <>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white px-2">Top Repositories</h3>
 
-                        <div className="flex items-center space-x-4 text-xs text-slate-500 dark:text-slate-400">
-                            {repo.language && (
-                                <div className="flex items-center space-x-1">
-                                    <FaCircle className="text-[10px] text-yellow-400" />
-                                    <span>{repo.language}</span>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {displayedRepos.slice(0, visibleCount).map(repo => {
+                            const isVisible = visibleRepos.includes(String(repo.id));
+                            return (
+                                <div key={repo.id} className="relative group h-full">
+                                    <a
+                                        href={repo.html_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className={`card-glass p-5 hover:border-violet-500 transition-colors flex flex-col justify-between h-full ${!isVisible && isOwner ? 'opacity-75 hover:opacity-100' : ''}`}
+                                    >
+                                        <div>
+                                            <div className="flex justify-between items-start mb-3 gap-3">
+                                                <h4 className="font-bold text-violet-600 dark:text-violet-400 group-hover:text-violet-500 truncate flex-1" title={repo.name}>
+                                                    {repo.name}
+                                                </h4>
+                                                
+                                                <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
+                                                    {isOwner ? (
+                                                        <div 
+                                                            className={`
+                                                                flex items-center gap-2 px-2 py-1 rounded-full border transition-all cursor-pointer shadow-sm
+                                                                ${isVisible 
+                                                                    ? 'bg-violet-50/80 border-violet-200 dark:bg-violet-900/20 dark:border-violet-700/50' 
+                                                                    : 'bg-slate-50 border-slate-200 dark:bg-slate-800 dark:border-slate-700'}
+                                                            `}
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                onToggleRepo(String(repo.id));
+                                                            }}
+                                                        >
+                                                            <span className={`text-[10px] font-bold uppercase tracking-wider ${isVisible ? 'text-violet-600 dark:text-violet-400' : 'text-slate-500'}`}>
+                                                                {repo.visibility}
+                                                            </span>
+                                                            <div
+                                                                className={`
+                                                                    relative inline-flex h-4 w-8 items-center rounded-full transition-colors duration-300
+                                                                    ${isVisible ? 'bg-violet-500' : 'bg-slate-300 dark:bg-slate-600'}
+                                                                `}
+                                                            >
+                                                                <span
+                                                                    className={`
+                                                                        inline-block h-3 w-3 transform rounded-full bg-white transition-transform duration-300 shadow-sm
+                                                                        ${isVisible ? 'translate-x-[18px]' : 'translate-x-0.5'}
+                                                                    `}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-xs px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 font-medium uppercase tracking-wide">
+                                                            {repo.visibility}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <p className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2 mb-4 min-h-[2.5rem]">
+                                                {repo.description || 'No description available'}
+                                            </p>
+                                        </div>
+
+                                        <div className="flex items-center space-x-4 text-xs text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-700/50 pt-3 mt-auto">
+                                            {repo.language && (
+                                                <div className="flex items-center space-x-1">
+                                                    <FaCircle className="text-[10px] text-yellow-400" />
+                                                    <span>{repo.language}</span>
+                                                </div>
+                                            )}
+                                            <div className="flex items-center space-x-1">
+                                                <FaStar className="text-amber-400" />
+                                                <span>{repo.stargazers_count}</span>
+                                            </div>
+                                            <div className="flex items-center space-x-1">
+                                                <FaCodeBranch />
+                                                <span>{repo.forks_count}</span>
+                                            </div>
+                                        </div>
+                                    </a>
                                 </div>
-                            )}
-                            <div className="flex items-center space-x-1">
-                                <FaStar />
-                                <span>{repo.stargazers_count}</span>
-                            </div>
-                            <div className="flex items-center space-x-1">
-                                <FaCodeBranch />
-                                <span>{repo.forks_count}</span>
-                            </div>
-                        </div>
-                    </a>
-                ))}
-            </div>
+                            )
+                        })}
+                    </div>
 
-            {/* Show More / Show Less Buttons */}
-            {repos.length > 6 && (
-                <div className="flex justify-center mt-6">
-                    {visibleCount < repos.length ? (
-                        <button
-                            onClick={() => setVisibleCount(prev => prev + 6)}
-                            className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-6 py-2 rounded-full text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-                        >
-                            Show More ({repos.length - visibleCount} remaining)
-                        </button>
-                    ) : (
-                        <button
-                            onClick={() => setVisibleCount(6)}
-                            className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-6 py-2 rounded-full text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-                        >
-                            Show Less
-                        </button>
+                    {/* Show More / Show Less Buttons */}
+                    {displayedRepos.length > 6 && (
+                        <div className="flex justify-center mt-6">
+                            {visibleCount < displayedRepos.length ? (
+                                <button
+                                    onClick={() => setVisibleCount(prev => prev + 6)}
+                                    className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-6 py-2 rounded-full text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                                >
+                                    Show More ({displayedRepos.length - visibleCount} remaining)
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={() => setVisibleCount(6)}
+                                    className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-6 py-2 rounded-full text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                                >
+                                    Show Less
+                                </button>
+                            )}
+                        </div>
                     )}
-                </div>
+                </>
             )}
         </div>
     );
