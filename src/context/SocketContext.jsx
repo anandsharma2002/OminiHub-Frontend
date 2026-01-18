@@ -10,9 +10,9 @@ export const SocketProvider = ({ children }) => {
 
     useEffect(() => {
         if (token) {
-            // Determine backend URL (from env or default)
-            // Vite handles env vars with import.meta.env
-            const backendUrl = 'http://localhost:5000'; // Or use env var if configured
+            // Determine backend URL from env, removing '/api' suffix if present because Socket.io connects to the root
+            const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+            const backendUrl = apiUrl.replace('/api', '');
 
             const newSocket = io(backendUrl, {
                 auth: { token },
