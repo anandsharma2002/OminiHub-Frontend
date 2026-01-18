@@ -1,6 +1,8 @@
 import React from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { SocketProvider } from './context/SocketContext';
+import { NotificationProvider } from './context/NotificationContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import Navbar from './components/layout/Navbar';
 
@@ -16,6 +18,7 @@ import Profile from './pages/Profile';
 
 import UserProfile from './pages/UserProfile';
 import GitHubPage from './pages/GitHubPage';
+import NotificationsPage from './pages/NotificationsPage';
 
 import DashboardLayout from './components/layout/DashboardLayout';
 import { ThemeProvider } from './context/ThemeContext';
@@ -23,35 +26,40 @@ import { ThemeProvider } from './context/ThemeContext';
 function App() {
     return (
         <AuthProvider>
-            <ThemeProvider>
-                <HashRouter>
-                    <div className="min-h-screen transition-colors duration-300 bg-slate-50 dark:bg-[#020617] text-slate-900 dark:text-slate-100">
-                        <Navbar />
-                        <Routes>
-                            {/* Public Routes */}
-                            <Route path="/" element={<Home />} />
-                            <Route path="/login" element={<Login />} />
-                            <Route path="/signup" element={<Signup />} />
-                            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <SocketProvider>
+                <NotificationProvider>
+                    <ThemeProvider>
+                        <HashRouter>
+                            <div className="min-h-screen transition-colors duration-300 bg-slate-50 dark:bg-[#020617] text-slate-900 dark:text-slate-100">
+                                <Navbar />
+                                <Routes>
+                                    {/* Public Routes */}
+                                    <Route path="/" element={<Home />} />
+                                    <Route path="/login" element={<Login />} />
+                                    <Route path="/signup" element={<Signup />} />
+                                    <Route path="/forgot-password" element={<ForgotPassword />} />
 
-                            {/* Protected Routes */}
-                            <Route element={<ProtectedRoute />}>
-                                <Route element={<DashboardLayout />}>
-                                    <Route path="/dashboard" element={<Dashboard />} />
-                                    <Route path="/docs" element={<Documents />} />
-                                    <Route path="/settings" element={<Settings />} />
-                                    <Route path="/profile" element={<Profile />} />
-                                    <Route path="/github" element={<GitHubPage />} />
-                                    <Route path="/user/:id" element={<UserProfile />} />
-                                </Route>
-                            </Route>
+                                    {/* Protected Routes */}
+                                    <Route element={<ProtectedRoute />}>
+                                        <Route element={<DashboardLayout />}>
+                                            <Route path="/dashboard" element={<Dashboard />} />
+                                            <Route path="/docs" element={<Documents />} />
+                                            <Route path="/settings" element={<Settings />} />
+                                            <Route path="/profile" element={<Profile />} />
+                                            <Route path="/github" element={<GitHubPage />} />
+                                            <Route path="/notifications" element={<NotificationsPage />} />
+                                            <Route path="/user/:id" element={<UserProfile />} />
+                                        </Route>
+                                    </Route>
 
-                            {/* 404 Route */}
-                            <Route path="*" element={<Home />} />
-                        </Routes>
-                    </div>
-                </HashRouter>
-            </ThemeProvider>
+                                    {/* 404 Route */}
+                                    <Route path="*" element={<Home />} />
+                                </Routes>
+                            </div>
+                        </HashRouter>
+                    </ThemeProvider>
+                </NotificationProvider>
+            </SocketProvider>
         </AuthProvider>
     );
 }

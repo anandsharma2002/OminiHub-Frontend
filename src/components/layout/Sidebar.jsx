@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { FaHome, FaProjectDiagram, FaTasks, FaBook, FaCog, FaSignOutAlt, FaChevronLeft, FaChevronRight, FaTimes, FaGithub } from 'react-icons/fa';
+import { FaHome, FaProjectDiagram, FaTasks, FaBook, FaCog, FaSignOutAlt, FaChevronLeft, FaChevronRight, FaTimes, FaGithub, FaBell } from 'react-icons/fa';
 import useAuth from '../../hooks/useAuth';
+import useNotifications from '../../hooks/useNotifications';
 
 const Sidebar = ({ isOpen, onClose }) => {
     const [isLocked, setIsLocked] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
     const { logout } = useAuth();
-    const location = useLocation(); // Re-add useLocation for active check optimization if needed
+    const { unreadCount } = useNotifications();
+    const location = useLocation();
 
     // Sidebar is collapsed if neither locked nor hovered (Desktop only logic)
     const collapsed = !isLocked && !isHovered;
@@ -16,6 +18,12 @@ const Sidebar = ({ isOpen, onClose }) => {
         { path: '/dashboard', label: 'Dashboard', icon: <FaHome /> },
         { path: '/projects', label: 'Projects', icon: <FaProjectDiagram /> },
         { path: '/tasks', label: 'My Tasks', icon: <FaTasks /> },
+        {
+            path: '/notifications',
+            label: 'Notifications',
+            icon: <FaBell />,
+            badge: unreadCount > 0 ? unreadCount : null
+        },
         { path: '/docs', label: 'Documents', icon: <FaBook /> },
         { path: '/github', label: 'GitHub', icon: <FaGithub /> },
         { path: '/settings', label: 'Settings', icon: <FaCog /> }
@@ -84,11 +92,23 @@ const Sidebar = ({ isOpen, onClose }) => {
                                 }
                             `}
                         >
-                            <span className="text-xl min-w-[20px]">{item.icon}</span>
+                            <span className="text-xl min-w-[20px] relative">
+                                {item.icon}
+                                {item.badge && collapsed && (
+                                    <span className="absolute -top-1 -right-2 bg-red-500 text-white text-[10px] font-bold px-1 rounded-full min-w-[16px] h-4 flex items-center justify-center">
+                                        {item.badge}
+                                    </span>
+                                )}
+                            </span>
 
                             {/* Mobile: Always Show Label. Desktop: Hide if collapsed */}
-                            <span className={`ml-3 whitespace-nowrap md:transition-opacity md:duration-200 ${collapsed ? 'md:opacity-0 md:hidden' : 'md:opacity-100'}`}>
+                            <span className={`ml-3 whitespace-nowrap flex-1 md:transition-opacity md:duration-200 ${collapsed ? 'md:opacity-0 md:hidden' : 'md:opacity-100'} flex items-center justify-between`}>
                                 {item.label}
+                                {item.badge && (
+                                    <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                                        {item.badge}
+                                    </span>
+                                )}
                             </span>
 
                             {/* Tooltip for collapsed mode (Desktop Only) */}

@@ -7,11 +7,15 @@ import { useAuth } from '../context/AuthContext';
 import { FaUser, FaEnvelope, FaIdBadge, FaCalendarAlt, FaArrowLeft, FaFileAlt, FaLock, FaGithub, FaLinkedin, FaCode, FaGlobe } from 'react-icons/fa';
 
 import GitHubSection from '../components/profile/GitHubSection';
+import FollowButton from '../components/social/FollowButton';
+import UserListModal from '../components/social/UserListModal';
+import { useSocket } from '../context/SocketContext';
 
 const UserProfile = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { user: currentUser } = useAuth();
+    const { socket } = useSocket();
 
     const [user, setUser] = useState(null);
     const [docs, setDocs] = useState([]);
@@ -19,24 +23,66 @@ const UserProfile = () => {
     const [docsLoading, setDocsLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    // Modal State
+    const [modalOpen, setModalOpen] = useState(false);
+    const [modalType, setModalType] = useState('followers');
+
+    const fetchUserProfile = async () => {
+        try {
+            const res = await userAPI.getUserProfile(id);
+            setUser(res.data.user);
+        } catch (err) {
+            setError('User not found');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     // Check if viewing own profile
     const isOwnProfile = currentUser && (currentUser._id === id || (user && currentUser._id === user._id));
     // Filter documents
     const publicDocs = docs.filter(doc => doc.privacy === 'public');
     const privateDocs = docs.filter(doc => doc.privacy === 'private');
 
+    // ... existing useEffect ...
+
+    // Real-time Follow Updates
     useEffect(() => {
-        const fetchUserProfile = async () => {
-            try {
-                const res = await userAPI.getUserProfile(id);
-                setUser(res.data.user);
-            } catch (err) {
-                setError('User not found');
-            } finally {
-                setLoading(false);
-            }
+        if (!socket) return;
+
+        const handleFollowUpdate = (data) => {
+            // Check if update is relevant to the user being viewed OR the current user
+            // If the viewed user's followers changed, refetch
+            // If the current user followed someone, refetch (if viewing own profile or the target)
+            
+            // Simplest Logic: Refetch if the event relates to the displayed user
+            // data.userId might be the one who performed the action OR the target
+            
+            // Actually, my backend emits 'follow_update' to specific recipients.
+            // If I am viewing User X, and I receive a 'follow_update', it means *I* was involved or *I* am X.
+            // But here we want to update the UI if WE are viewing X and someone else follows X.
+            // Wait, my backend implementation only emits to Recipient and Requester.
+            // It does NOT broadcast to everyone viewing the profile.
+            // So:
+            // 1. If I follow X, X gets event. I get event.
+            // 2. If Y follows X, X gets event. Y gets event. I (Observer) DO NOT get event.
+            
+            // Limitation: Real-time count updates for strictly 3rd party observers requires Room broadcasting (e.g., join 'profile_view_X').
+            // For now, let's just handle the case where *I* am involved or *I* am the user profile being viewed (e.g. separate tab).
+            
+            // Ideally, we should join a room based on profileId.
+            // But given current backend, let's just refetch if we get an event.
+            fetchUserProfile(); 
         };
 
+        socket.on('follow_update', handleFollowUpdate);
+
+        return () => {
+            socket.off('follow_update', handleFollowUpdate);
+        };
+    }, [socket, id]); // dependent on id to re-bind if needed, though handleFollowUpdate calls fetchUserProfile which depends on id
+
+    useEffect(() => {
         const fetchUserDocs = async () => {
             try {
                 const res = await docsApi.getDocuments(id);
@@ -126,6 +172,36 @@ const UserProfile = () => {
                         <span className="px-3 py-1 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-300 text-sm font-medium mb-6">
                             {user.role || 'User'}
                         </span>
+
+
+                        <div className="flex justify-center w-full gap-8 mb-6 border-b border-slate-100 dark:border-slate-800 pb-4">
+                            <div
+                                className="text-center cursor-pointer hover:opacity-80 transition-opacity"
+                                onClick={() => { setModalType('followers'); setModalOpen(true); }}
+                            >
+                                <p className="text-2xl font-bold text-slate-900 dark:text-white">{user.followers?.length || 0}</p>
+                                <p className="text-xs text-slate-500 uppercase font-bold tracking-wider">Followers</p>
+                            </div>
+                            <div
+                                className="text-center cursor-pointer hover:opacity-80 transition-opacity"
+                                onClick={() => { setModalType('following'); setModalOpen(true); }}
+                            >
+                                <p className="text-2xl font-bold text-slate-900 dark:text-white">{user.following?.length || 0}</p>
+                                <p className="text-xs text-slate-500 uppercase font-bold tracking-wider">Following</p>
+                            </div>
+                        </div>
+
+                        {!isOwnProfile && (
+                            <div className="mb-6">
+                                <FollowButton
+                                    targetUserId={user._id}
+                                    onSuccess={() => {
+                                        // Refetch user profile to update stats immediately
+                                        fetchUserProfile();
+                                    }}
+                                />
+                            </div>
+                        )}
 
                         <div className="w-full space-y-4 text-left">
                             <div className="flex items-center space-x-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
@@ -311,6 +387,13 @@ const UserProfile = () => {
                     )}
                 </div>
             </div>
+            {/* User List Modal */}
+            <UserListModal
+                isOpen={modalOpen}
+                onClose={() => setModalOpen(false)}
+                userId={user?._id}
+                type={modalType}
+            />
         </div>
     );
 };

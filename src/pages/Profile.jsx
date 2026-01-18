@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import useAuth from '../hooks/useAuth';
 import userAPI from '../api/user';
 import { FaUser, FaEnvelope, FaIdBadge, FaCalendarAlt, FaEdit, FaCamera, FaSave, FaTimes, FaPlus, FaTrash, FaGithub, FaLinkedin, FaCode } from 'react-icons/fa';
+import UserListModal from '../components/social/UserListModal';
 
 const Profile = () => {
     const { user, updateUser } = useAuth();
@@ -17,6 +18,10 @@ const Profile = () => {
     });
     const [imageFile, setImageFile] = useState(null);
     const [previewImage, setPreviewImage] = useState(null);
+
+    // Modal State
+    const [modalOpen, setModalOpen] = useState(false);
+    const [modalType, setModalType] = useState('followers'); // followers | following
 
     // Initialize state when user loads or edit mode opens
     useEffect(() => {
@@ -192,6 +197,23 @@ const Profile = () => {
                                 <span className="px-3 py-1 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-300 text-sm font-medium mb-6">
                                     {user?.role || 'User'}
                                 </span>
+
+                                <div className="flex justify-center w-full gap-8 mb-6 border-b border-slate-100 dark:border-slate-800 pb-4">
+                                    <div
+                                        className="text-center cursor-pointer hover:opacity-80 transition-opacity"
+                                        onClick={() => { setModalType('followers'); setModalOpen(true); }}
+                                    >
+                                        <p className="text-2xl font-bold text-slate-900 dark:text-white">{user?.followers?.length || 0}</p>
+                                        <p className="text-xs text-slate-500 uppercase font-bold tracking-wider">Followers</p>
+                                    </div>
+                                    <div
+                                        className="text-center cursor-pointer hover:opacity-80 transition-opacity"
+                                        onClick={() => { setModalType('following'); setModalOpen(true); }}
+                                    >
+                                        <p className="text-2xl font-bold text-slate-900 dark:text-white">{user?.following?.length || 0}</p>
+                                        <p className="text-xs text-slate-500 uppercase font-bold tracking-wider">Following</p>
+                                    </div>
+                                </div>
                             </>
                         ) : (
                             <div className="w-full space-y-3 mb-6">
@@ -371,6 +393,13 @@ const Profile = () => {
 
                 </div>
             </div>
+            {/* User List Modal */}
+            <UserListModal 
+                isOpen={modalOpen} 
+                onClose={() => setModalOpen(false)}
+                userId={user?._id}
+                type={modalType}
+            />
         </div>
     );
 };
