@@ -26,7 +26,7 @@ const NotificationList = () => {
     }
 
     return (
-        <div className="divide-y divide-slate-100 dark:divide-slate-800 max-h-[80vh] overflow-y-auto custom-scrollbar">
+        <div className="divide-y divide-slate-100 dark:divide-slate-800">
             {notifications.map(notification => (
                 <NotificationItem
                     key={notification._id}

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { getNotifications, markAsRead } from '../api/notification';
+import { getNotifications, markAsRead, markAllAsRead as apiMarkAllAsRead } from '../api/notification';
 import { useSocket } from './SocketContext';
 
 const NotificationContext = createContext();
@@ -37,6 +37,16 @@ export const NotificationProvider = ({ children }) => {
         }
     };
 
+    const markAllRead = async () => {
+        try {
+            await apiMarkAllAsRead(); // Renamed import needed? No, I will import it.
+            setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+            setUnreadCount(0);
+        } catch (error) {
+            console.error("Failed to mark all as read", error);
+        }
+    };
+
     // Initial Fetch
     useEffect(() => {
         fetchNotifications();
@@ -47,15 +57,18 @@ export const NotificationProvider = ({ children }) => {
         if (!socket) return;
 
         const handleNewNotification = (newNotification) => {
+            console.log('[NotificationContext] Received new_notification:', newNotification);
             // Add new notification to top of list
             setNotifications(prev => [newNotification, ...prev]);
             // Increment unread count
             setUnreadCount(prev => prev + 1);
         };
 
+        console.log('[NotificationContext] Setting up socket listener for new_notification');
         socket.on('new_notification', handleNewNotification);
 
         return () => {
+            console.log('[NotificationContext] Cleaning up socket listener');
             socket.off('new_notification', handleNewNotification);
         };
     }, [socket]);
@@ -65,6 +78,7 @@ export const NotificationProvider = ({ children }) => {
         unreadCount,
         loading,
         markRead,
+        markAllRead,
         refreshNotifications: fetchNotifications
     };
 

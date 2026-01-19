@@ -3,7 +3,7 @@ import { FaUserPlus, FaUserCheck, FaUserClock, FaUserTimes } from 'react-icons/f
 import { sendFollowRequest, getFollowStatus, unfollowUser } from '../../api/social';
 import useAuth from '../../hooks/useAuth';
 
-const FollowButton = ({ targetUserId, onStatusChange, onSuccess }) => {
+const FollowButton = ({ targetUserId, onStatusChange, onSuccess, refreshTrigger }) => {
     const { user } = useAuth();
     const [status, setStatus] = useState('loading'); // loading, none, pending, following
     const [loading, setLoading] = useState(false);
@@ -31,7 +31,7 @@ const FollowButton = ({ targetUserId, onStatusChange, onSuccess }) => {
         };
 
         checkStatus();
-    }, [user, targetUserId]);
+    }, [user, targetUserId, refreshTrigger]);
 
     const handleUnfollow = async () => {
         if (loading) return;

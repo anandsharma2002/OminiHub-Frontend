@@ -1,8 +1,15 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import NotificationList from '../components/social/NotificationList';
 import { FaBell } from 'react-icons/fa';
+import useNotifications from '../hooks/useNotifications';
 
 const NotificationsPage = () => {
+    const { markAllRead } = useNotifications();
+
+    useEffect(() => {
+        markAllRead();
+    }, []);
+
     return (
         <div className="page-container">
             <div className="flex items-center space-x-3 mb-8">

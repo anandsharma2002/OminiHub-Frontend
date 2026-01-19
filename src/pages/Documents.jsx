@@ -5,6 +5,7 @@ import docsApi from '../api/docs';
 import DocumentCard from '../components/documents/DocumentCard';
 import AddDocumentModal from '../components/documents/AddDocumentModal';
 import EditDocumentModal from '../components/documents/EditDocumentModal';
+import { useSocket } from '../context/SocketContext';
 
 const Documents = () => {
     const [docs, setDocs] = useState([]);
@@ -14,6 +15,7 @@ const Documents = () => {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingDoc, setEditingDoc] = useState(null);
     const { setSidebarOpen } = useOutletContext();
+    const { socket } = useSocket();
 
     const fetchDocs = async () => {
         setLoading(true);
@@ -30,6 +32,35 @@ const Documents = () => {
     useEffect(() => {
         fetchDocs();
     }, []);
+
+    // Real-time Updates
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleDocUpdate = (data) => {
+            const { action, doc, docId } = data;
+
+            setDocs(prevDocs => {
+                if (action === 'create') {
+                    // Prepend new doc
+                    return [doc, ...prevDocs];
+                } else if (action === 'update') {
+                    // Replace existing doc
+                    return prevDocs.map(d => d._id === doc._id ? doc : d);
+                } else if (action === 'delete') {
+                    // Filter out deleted doc
+                    return prevDocs.filter(d => d._id !== docId);
+                }
+                return prevDocs;
+            });
+        };
+
+        socket.on('document_update', handleDocUpdate);
+
+        return () => {
+            socket.off('document_update', handleDocUpdate);
+        };
+    }, [socket]);
 
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this document?')) {

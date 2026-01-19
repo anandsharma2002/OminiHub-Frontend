@@ -15,7 +15,12 @@ const uploadDocument = async (formData) => {
 
 const getDocuments = async (userId) => {
     try {
-        const response = await axios.get('/docs', { params: { userId } });
+        const response = await axios.get('/docs', {
+            params: {
+                userId,
+                t: Date.now() // Bypass cache
+            }
+        });
         return response.data;
     } catch (error) {
         throw error.response?.data?.message || 'Failed to fetch documents';

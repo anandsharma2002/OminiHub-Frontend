@@ -5,14 +5,16 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
+    const [token, setToken] = useState(localStorage.getItem('token')); // Initialize from localStorage
     const [loading, setLoading] = useState(true);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     // Load user on mount
     useEffect(() => {
         const loadUser = async () => {
-            const token = localStorage.getItem('token');
-            if (token) {
+            const storedToken = localStorage.getItem('token');
+            if (storedToken) {
+                setToken(storedToken); // Ensure state matches storage
                 try {
                     const res = await authAPI.getMe();
                     if (res.status === 'success') {
@@ -22,9 +24,12 @@ export const AuthProvider = ({ children }) => {
                 } catch (error) {
                     console.error("Failed to load user", error);
                     localStorage.removeItem('token');
+                    setToken(null);
                     setUser(null);
                     setIsAuthenticated(false);
                 }
+            } else {
+                setToken(null);
             }
             setLoading(false);
         };
@@ -38,6 +43,7 @@ export const AuthProvider = ({ children }) => {
         try {
             const data = await authAPI.login(credentials);
             localStorage.setItem('token', data.token);
+            setToken(data.token);
             setIsAuthenticated(true);
             setUser(data.data.user); // data.data.user because of API response structure
             return data;
@@ -66,6 +72,7 @@ export const AuthProvider = ({ children }) => {
             const res = await authAPI.verifyEmail({ email, code });
             if (res.token) {
                 localStorage.setItem('token', res.token);
+                setToken(res.token);
                 setUser(res.data.user);
                 setIsAuthenticated(true);
                 return { success: true };
@@ -78,6 +85,8 @@ export const AuthProvider = ({ children }) => {
     // Logout Action
     const logout = () => {
         authAPI.logout();
+        localStorage.removeItem('token'); // Ensure removal
+        setToken(null);
         setUser(null);
         setIsAuthenticated(false);
     };
@@ -85,13 +94,14 @@ export const AuthProvider = ({ children }) => {
     return (
         <AuthContext.Provider value={{
             user,
+            token, // Exposed!
             loading,
             isAuthenticated,
             login,
             signup,
             verifyEmail,
             logout,
-            updateUser: setUser // Expose setUser to update user state from components
+            updateUser: setUser
         }}>
             {children}
         </AuthContext.Provider>

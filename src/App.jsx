@@ -23,11 +23,14 @@ import NotificationsPage from './pages/NotificationsPage';
 import DashboardLayout from './components/layout/DashboardLayout';
 import { ThemeProvider } from './context/ThemeContext';
 
+import GlobalSocketListener from './components/GlobalSocketListener';
+
 function App() {
     return (
         <AuthProvider>
             <SocketProvider>
                 <NotificationProvider>
+                    <GlobalSocketListener />
                     <ThemeProvider>
                         <HashRouter>
                             <div className="min-h-screen transition-colors duration-300 bg-slate-50 dark:bg-[#020617] text-slate-900 dark:text-slate-100">

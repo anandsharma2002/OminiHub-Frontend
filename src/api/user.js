@@ -6,7 +6,7 @@ const userAPI = {
         return response.data;
     },
     getUserProfile: async (id) => {
-        const response = await axios.get(`/users/${id}/profile`);
+        const response = await axios.get(`/users/${id}/profile?t=${Date.now()}`);
         return response.data;
     },
     updateProfile: async (formData) => {

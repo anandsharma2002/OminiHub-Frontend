@@ -44,61 +44,57 @@ const UserProfile = () => {
     const publicDocs = docs.filter(doc => doc.privacy === 'public');
     const privateDocs = docs.filter(doc => doc.privacy === 'private');
 
-    // ... existing useEffect ...
+    const fetchUserDocs = async () => {
+        try {
+            const res = await docsApi.getDocuments(id);
+            setDocs(res);
+        } catch (err) {
+            console.error("Failed to fetch docs", err);
+        } finally {
+            setDocsLoading(false);
+        }
+    };
 
-    // Real-time Follow Updates
+    // Real-time Update Trigger
+    const [followUpdateTrigger, setFollowUpdateTrigger] = useState(0);
+
+    // Initial Fetch
     useEffect(() => {
-        if (!socket) return;
-
-        const handleFollowUpdate = (data) => {
-            // Check if update is relevant to the user being viewed OR the current user
-            // If the viewed user's followers changed, refetch
-            // If the current user followed someone, refetch (if viewing own profile or the target)
-            
-            // Simplest Logic: Refetch if the event relates to the displayed user
-            // data.userId might be the one who performed the action OR the target
-            
-            // Actually, my backend emits 'follow_update' to specific recipients.
-            // If I am viewing User X, and I receive a 'follow_update', it means *I* was involved or *I* am X.
-            // But here we want to update the UI if WE are viewing X and someone else follows X.
-            // Wait, my backend implementation only emits to Recipient and Requester.
-            // It does NOT broadcast to everyone viewing the profile.
-            // So:
-            // 1. If I follow X, X gets event. I get event.
-            // 2. If Y follows X, X gets event. Y gets event. I (Observer) DO NOT get event.
-            
-            // Limitation: Real-time count updates for strictly 3rd party observers requires Room broadcasting (e.g., join 'profile_view_X').
-            // For now, let's just handle the case where *I* am involved or *I* am the user profile being viewed (e.g. separate tab).
-            
-            // Ideally, we should join a room based on profileId.
-            // But given current backend, let's just refetch if we get an event.
-            fetchUserProfile(); 
-        };
-
-        socket.on('follow_update', handleFollowUpdate);
-
-        return () => {
-            socket.off('follow_update', handleFollowUpdate);
-        };
-    }, [socket, id]); // dependent on id to re-bind if needed, though handleFollowUpdate calls fetchUserProfile which depends on id
-
-    useEffect(() => {
-        const fetchUserDocs = async () => {
-            try {
-                const res = await docsApi.getDocuments(id);
-                setDocs(res);
-            } catch (err) {
-                console.error("Failed to fetch docs", err);
-            } finally {
-                setDocsLoading(false);
-            }
-        };
-
         if (id) {
             fetchUserProfile();
             fetchUserDocs();
         }
     }, [id]);
+
+    // Real-time Updates
+    useEffect(() => {
+        if (!socket || !id) return;
+
+        // Join Profile Room (for public updates)
+        const roomName = `profile_${id}`;
+        socket.emit('join_entity', roomName);
+
+        const handleFollowUpdate = (data) => {
+            console.log("Follow update received", data);
+            fetchUserProfile(); // Update counts
+            setFollowUpdateTrigger(prev => prev + 1); // Update button status
+        };
+
+        const handleDocUpdate = () => {
+            fetchUserDocs();
+        };
+
+        socket.on('follow_update', handleFollowUpdate);
+        socket.on('document_update', handleDocUpdate);
+        socket.on('github_update', handleFollowUpdate); // Refetch user profile on GitHub update
+
+        return () => {
+            socket.emit('leave_entity', roomName);
+            socket.off('follow_update', handleFollowUpdate);
+            socket.off('document_update', handleDocUpdate);
+            socket.off('github_update', handleFollowUpdate);
+        };
+    }, [socket, id]);
 
     if (loading) {
         return (
@@ -199,6 +195,7 @@ const UserProfile = () => {
                                         // Refetch user profile to update stats immediately
                                         fetchUserProfile();
                                     }}
+                                    refreshTrigger={followUpdateTrigger}
                                 />
                             </div>
                         )}

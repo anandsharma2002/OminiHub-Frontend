@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FaUser, FaCheck, FaTimes } from 'react-icons/fa';
 import { respondToFollowRequest } from '../../api/social';
 import { formatDistanceToNow } from 'date-fns';
@@ -6,17 +6,19 @@ import { formatDistanceToNow } from 'date-fns';
 const NotificationItem = ({ notification, onMarkRead }) => {
     const { sender, type, message, createdAt, isRead, relatedId, _id } = notification;
 
+    const [processed, setProcessed] = useState(false);
+
     const handleAction = async (status) => {
         try {
             await respondToFollowRequest(relatedId, status);
-            // After responding, mark as read to hide buttons (logic in render uses !isRead)
-            onMarkRead(_id);
+            setProcessed(true); // Hide buttons locally
+            if (!isRead) onMarkRead(_id); // Also mark read if not already
         } catch (err) {
             console.error("Failed to respond:", err);
             if (err.response && (err.response.status === 404 || err.response.status === 400)) {
-                // Request no longer exists or already processed
                 alert(err.response.data.message || "Request no longer valid");
-                onMarkRead(_id); // Remove buttons
+                setProcessed(true); // Hide buttons as invalid
+                if (!isRead) onMarkRead(_id);
             } else {
                 alert("Failed to process request. Please try again.");
             }
@@ -60,7 +62,7 @@ const NotificationItem = ({ notification, onMarkRead }) => {
                 </p>
 
                 {/* Actions for Follow Request */}
-                {type === 'follow_request' && !isRead && (
+                {type === 'follow_request' && !processed && (
                     <div className="flex items-center space-x-3 mt-3" onClick={(e) => e.stopPropagation()}>
                         <button
                             onClick={() => handleAction('accepted')}
