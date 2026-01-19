@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { FaHome, FaProjectDiagram, FaTasks, FaBook, FaCog, FaSignOutAlt, FaChevronLeft, FaChevronRight, FaTimes, FaGithub, FaBell } from 'react-icons/fa';
+import { FaHome, FaProjectDiagram, FaTasks, FaBook, FaCog, FaSignOutAlt, FaChevronLeft, FaChevronRight, FaTimes, FaGithub, FaBell, FaComments } from 'react-icons/fa';
 import useAuth from '../../hooks/useAuth';
 import useNotifications from '../../hooks/useNotifications';
 
@@ -8,7 +8,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     const [isLocked, setIsLocked] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
     const { logout } = useAuth();
-    const { unreadCount } = useNotifications();
+    const { unreadCount, chatUnreadCount } = useNotifications();
     const location = useLocation();
 
     // Sidebar is collapsed if neither locked nor hovered (Desktop only logic)
@@ -23,6 +23,12 @@ const Sidebar = ({ isOpen, onClose }) => {
             label: 'Notifications',
             icon: <FaBell />,
             badge: unreadCount > 0 ? unreadCount : null
+        },
+        {
+            path: '/chat',
+            label: 'Chat',
+            icon: <FaComments />,
+            badge: chatUnreadCount > 0 ? chatUnreadCount : null
         },
         { path: '/docs', label: 'Documents', icon: <FaBook /> },
         { path: '/github', label: 'GitHub', icon: <FaGithub /> },

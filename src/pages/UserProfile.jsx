@@ -4,7 +4,7 @@ import userAPI from '../api/user';
 import docsApi from '../api/docs';
 import DocumentCard from '../components/documents/DocumentCard';
 import { useAuth } from '../context/AuthContext';
-import { FaUser, FaEnvelope, FaIdBadge, FaCalendarAlt, FaArrowLeft, FaFileAlt, FaLock, FaGithub, FaLinkedin, FaCode, FaGlobe } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaIdBadge, FaCalendarAlt, FaArrowLeft, FaFileAlt, FaLock, FaGithub, FaLinkedin, FaCode, FaGlobe, FaComments } from 'react-icons/fa';
 
 import GitHubSection from '../components/profile/GitHubSection';
 import FollowButton from '../components/social/FollowButton';
@@ -188,7 +188,7 @@ const UserProfile = () => {
                         </div>
 
                         {!isOwnProfile && (
-                            <div className="mb-6">
+                            <div className="mb-6 flex items-center justify-center gap-4">
                                 <FollowButton
                                     targetUserId={user._id}
                                     onSuccess={() => {
@@ -197,6 +197,26 @@ const UserProfile = () => {
                                     }}
                                     refreshTrigger={followUpdateTrigger}
                                 />
+                                {(() => {
+                                    // Check Access Control: A follows B OR B follows A
+                                    // currentUser.following (IDs) includes user._id
+                                    // user.following (IDs) includes currentUser._id
+                                    const amIFollowing = currentUser?.following?.includes(user._id);
+                                    const isFollowingMe = user.following?.includes(currentUser?._id);
+
+                                    if (amIFollowing || isFollowingMe) {
+                                        return (
+                                            <button
+                                                onClick={() => navigate('/chat', { state: { initiateChat: user } })}
+                                                className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-300 font-bold hover:bg-violet-200 dark:hover:bg-violet-900/50 transition-colors"
+                                            >
+                                                <FaComments />
+                                                <span>Message</span>
+                                            </button>
+                                        );
+                                    }
+                                    return null;
+                                })()}
                             </div>
                         )}
 

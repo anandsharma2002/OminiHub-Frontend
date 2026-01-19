@@ -19,6 +19,7 @@ import Profile from './pages/Profile';
 import UserProfile from './pages/UserProfile';
 import GitHubPage from './pages/GitHubPage';
 import NotificationsPage from './pages/NotificationsPage';
+import ChatPage from './pages/ChatPage';
 
 import DashboardLayout from './components/layout/DashboardLayout';
 import { ThemeProvider } from './context/ThemeContext';
@@ -51,6 +52,7 @@ function App() {
                                             <Route path="/profile" element={<Profile />} />
                                             <Route path="/github" element={<GitHubPage />} />
                                             <Route path="/notifications" element={<NotificationsPage />} />
+                                            <Route path="/chat" element={<ChatPage />} />
                                             <Route path="/user/:id" element={<UserProfile />} />
                                         </Route>
                                     </Route>
