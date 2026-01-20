@@ -1,26 +1,38 @@
 import React, { useState } from 'react';
 import { FaUser, FaCheck, FaTimes } from 'react-icons/fa';
+import projectAPI from '../../api/project';
 import { respondToFollowRequest } from '../../api/social';
 import { formatDistanceToNow } from 'date-fns';
 
 const NotificationItem = ({ notification, onMarkRead }) => {
-    const { sender, type, message, createdAt, isRead, relatedId, _id } = notification;
+    const { sender, type, message, createdAt, isRead, relatedId, _id, metadata } = notification;
 
     const [processed, setProcessed] = useState(false);
 
     const handleAction = async (status) => {
         try {
-            await respondToFollowRequest(relatedId, status);
+            if (type === 'follow_request') {
+                await respondToFollowRequest(relatedId, status);
+            } else if (type === 'project_invite') {
+                const projectId = metadata?.projectId;
+                if (!projectId) throw new Error("Invalid project invitation");
+                // Status for project is 'Accepted' or 'Ignored' (Sentence Case usually, but checking backend)
+                // Backend expects 'Accepted' or 'Ignored'. Frontend buttons usually say 'accept'/'reject'
+                const apiStatus = status === 'accepted' ? 'Accepted' : 'Ignored';
+                await projectAPI.respondToInvitation(projectId, apiStatus);
+            }
+
             setProcessed(true); // Hide buttons locally
             if (!isRead) onMarkRead(_id); // Also mark read if not already
         } catch (err) {
             console.error("Failed to respond:", err);
-            if (err.response && (err.response.status === 404 || err.response.status === 400)) {
-                alert(err.response.data.message || "Request no longer valid");
-                setProcessed(true); // Hide buttons as invalid
+            const msg = err.response?.data?.message || "Failed to process request";
+            alert(msg);
+
+            // If already processed/invalid, hide buttons
+            if (msg.includes("already") || msg.includes("not found")) {
+                setProcessed(true);
                 if (!isRead) onMarkRead(_id);
-            } else {
-                alert("Failed to process request. Please try again.");
             }
         }
     };
@@ -61,8 +73,8 @@ const NotificationItem = ({ notification, onMarkRead }) => {
                     {formatDistanceToNow(new Date(createdAt), { addSuffix: true })}
                 </p>
 
-                {/* Actions for Follow Request */}
-                {type === 'follow_request' && !processed && (
+                {/* Actions for Follow Request OR Project Invite */}
+                {(type === 'follow_request' || type === 'project_invite') && !processed && (
                     <div className="flex items-center space-x-3 mt-3" onClick={(e) => e.stopPropagation()}>
                         <button
                             onClick={() => handleAction('accepted')}

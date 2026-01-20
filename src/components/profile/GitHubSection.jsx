@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { FaGithub, FaStar, FaCodeBranch, FaCircle } from 'react-icons/fa';
 import api from '../../api/axios';
 
-const GitHubSection = ({ username, isOwner, visibleRepos = [], onToggleRepo }) => {
+const GitHubSection = ({ username, isOwner, visibleRepos = [], onToggleRepo, onCreateProject }) => {
     const [data, setData] = useState(null);
     const [visibleCount, setVisibleCount] = useState(6);
 
@@ -156,10 +156,24 @@ const GitHubSection = ({ username, isOwner, visibleRepos = [], onToggleRepo }) =
                                                 <FaStar className="text-amber-400" />
                                                 <span>{repo.stargazers_count}</span>
                                             </div>
-                                            <div className="flex items-center space-x-1">
-                                                <FaCodeBranch />
-                                                <span>{repo.forks_count}</span>
-                                            </div>
+
+                                            {/* Create Project Button */}
+                                            {isOwner && (
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        if (onCreateProject) {
+                                                            onCreateProject(repo);
+                                                        } else {
+                                                            console.log("Create Project from", repo.name);
+                                                        }
+                                                    }}
+                                                    className="ml-auto px-2 py-1 bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 rounded-md hover:bg-violet-200 dark:hover:bg-violet-900/60 transition-colors font-medium"
+                                                >
+                                                    + Project
+                                                </button>
+                                            )}
                                         </div>
                                     </a>
                                 </div>

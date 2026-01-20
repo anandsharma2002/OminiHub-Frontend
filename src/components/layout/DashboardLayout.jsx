@@ -12,7 +12,7 @@ const DashboardLayout = () => {
             <Sidebar isOpen={isSidebarOpen} onClose={() => setSidebarOpen(false)} />
 
             {/* Main Content Area */}
-            <main className="flex-1 w-full relative">
+            <main className="flex-1 min-w-0 relative overflow-hidden">
                 {/* Mobile Sidebar Toggle - Positioned absolutely to avoid layout shift, 
                     pages should account for this or implement their own trigger using context */}
                 <div className="md:hidden absolute top-4 left-4 z-20">

@@ -21,6 +21,11 @@ import GitHubPage from './pages/GitHubPage';
 import NotificationsPage from './pages/NotificationsPage';
 import ChatPage from './pages/ChatPage';
 
+import Features from './pages/Features';
+import Pricing from './pages/Pricing';
+import ProjectsPage from './pages/ProjectsPage';
+import ProjectDetails from './pages/ProjectDetails';
+
 import DashboardLayout from './components/layout/DashboardLayout';
 import { ThemeProvider } from './context/ThemeContext';
 
@@ -39,6 +44,8 @@ function App() {
                                 <Routes>
                                     {/* Public Routes */}
                                     <Route path="/" element={<Home />} />
+                                    <Route path="/features" element={<Features />} />
+                                    <Route path="/pricing" element={<Pricing />} />
                                     <Route path="/login" element={<Login />} />
                                     <Route path="/signup" element={<Signup />} />
                                     <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -47,6 +54,8 @@ function App() {
                                     <Route element={<ProtectedRoute />}>
                                         <Route element={<DashboardLayout />}>
                                             <Route path="/dashboard" element={<Dashboard />} />
+                                            <Route path="/projects" element={<ProjectsPage />} />
+                                            <Route path="/projects/:id" element={<ProjectDetails />} />
                                             <Route path="/docs" element={<Documents />} />
                                             <Route path="/settings" element={<Settings />} />
                                             <Route path="/profile" element={<Profile />} />

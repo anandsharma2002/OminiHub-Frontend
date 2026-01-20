@@ -1,0 +1,16 @@
+import axios from '../api/axios';
+
+const projectAPI = {
+    // Projects
+    getProjects: () => axios.get('/projects'),
+    getProject: (id) => axios.get(`/projects/${id}`),
+    createProject: (data) => axios.post('/projects', data),
+
+    // Invitations
+    inviteUser: (id, userId) => axios.post(`/projects/${id}/invite`, { userId }),
+    getInvitations: () => axios.get('/projects/invitations'),
+    respondToInvitation: (projectId, status) => axios.post('/projects/invitations/respond', { projectId, status }),
+    removeContributor: (projectId, userId) => axios.delete('/projects/contributors', { data: { projectId, userId } }),
+};
+
+export default projectAPI;
