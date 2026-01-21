@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { FaHome, FaProjectDiagram, FaTasks, FaBook, FaCog, FaSignOutAlt, FaChevronLeft, FaChevronRight, FaTimes, FaGithub, FaBell, FaComments } from 'react-icons/fa';
+import { FaHome, FaProjectDiagram, FaTasks, FaBook, FaCog, FaSignOutAlt, FaChevronLeft, FaChevronRight, FaTimes, FaGithub, FaBell, FaComments, FaRobot } from 'react-icons/fa';
 import useAuth from '../../hooks/useAuth';
 import useNotifications from '../../hooks/useNotifications';
 
@@ -30,6 +30,7 @@ const Sidebar = ({ isOpen, onClose }) => {
             icon: <FaComments />,
             badge: chatUnreadCount > 0 ? chatUnreadCount : null
         },
+        { path: '/gemini', label: 'Gemini AI', icon: <FaRobot /> },
         { path: '/docs', label: 'Documents', icon: <FaBook /> },
         { path: '/github', label: 'GitHub', icon: <FaGithub /> },
         { path: '/settings', label: 'Settings', icon: <FaCog /> }

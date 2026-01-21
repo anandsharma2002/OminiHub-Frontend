@@ -20,6 +20,7 @@ import UserProfile from './pages/UserProfile';
 import GitHubPage from './pages/GitHubPage';
 import NotificationsPage from './pages/NotificationsPage';
 import ChatPage from './pages/ChatPage';
+import GeminiPage from './pages/GeminiPage';
 
 import Features from './pages/Features';
 import Pricing from './pages/Pricing';
@@ -62,6 +63,7 @@ function App() {
                                             <Route path="/github" element={<GitHubPage />} />
                                             <Route path="/notifications" element={<NotificationsPage />} />
                                             <Route path="/chat" element={<ChatPage />} />
+                                            <Route path="/gemini" element={<GeminiPage />} />
                                             <Route path="/user/:id" element={<UserProfile />} />
                                         </Route>
                                     </Route>
