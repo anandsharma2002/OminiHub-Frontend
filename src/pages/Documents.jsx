@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { FaPlus, FaSearch, FaBars } from 'react-icons/fa';
+import { FaPlus, FaSearch, FaBars, FaTimes } from 'react-icons/fa';
 import docsApi from '../api/docs';
 import DocumentCard from '../components/documents/DocumentCard';
 import AddDocumentModal from '../components/documents/AddDocumentModal';
@@ -111,8 +111,16 @@ const Documents = () => {
                             placeholder="Search documents..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="input-field pl-10 py-2.5 w-64"
+                            className="input-field pl-10 pr-10 py-2.5 w-64"
                         />
+                        {search && (
+                            <button
+                                onClick={() => setSearch('')}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                            >
+                                <FaTimes />
+                            </button>
+                        )}
                     </div>
                     <button
                         onClick={() => setIsAddModalOpen(true)}
@@ -132,8 +140,16 @@ const Documents = () => {
                     placeholder="Search documents..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="input-field pl-10 py-2.5"
+                    className="input-field pl-10 pr-10 py-2.5"
                 />
+                {search && (
+                    <button
+                        onClick={() => setSearch('')}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                    >
+                        <FaTimes />
+                    </button>
+                )}
             </div>
 
             {loading ? (

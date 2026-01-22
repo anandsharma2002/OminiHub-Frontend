@@ -100,10 +100,18 @@ const Navbar = () => {
                                 <input
                                     type="text"
                                     placeholder="Search users..."
-                                    className="w-full pl-10 pr-4 py-2 rounded-full bg-slate-100 dark:bg-slate-800 border-none focus:ring-2 focus:ring-violet-500 text-slate-800 dark:text-slate-200 transition-all"
+                                    className="w-full pl-10 pr-10 py-2 rounded-full bg-slate-100 dark:bg-slate-800 border-none focus:ring-2 focus:ring-violet-500 text-slate-800 dark:text-slate-200 transition-all"
                                     value={searchQuery}
                                     onChange={handleSearch}
                                 />
+                                {searchQuery && (
+                                    <button
+                                        onClick={clearSearch}
+                                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                                    >
+                                        <FaTimes />
+                                    </button>
+                                )}
                             </div>
 
                             {/* Search Results Dropdown */}
@@ -208,10 +216,18 @@ const Navbar = () => {
                                     <input
                                         type="text"
                                         placeholder="Search users..."
-                                        className="w-full pl-10 pr-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 border-none focus:ring-2 focus:ring-violet-500 text-slate-800 dark:text-slate-200"
+                                        className="w-full pl-10 pr-10 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 border-none focus:ring-2 focus:ring-violet-500 text-slate-800 dark:text-slate-200"
                                         value={searchQuery}
                                         onChange={handleSearch}
                                     />
+                                    {searchQuery && (
+                                        <button
+                                            onClick={clearSearch}
+                                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                                        >
+                                            <FaTimes />
+                                        </button>
+                                    )}
                                     {/* Mobile Search Results */}
                                     {(searchResults.length > 0 || isSearchLoading) && searchQuery.length > 2 && (
                                         <div className="mt-2 bg-white dark:bg-[#020617] rounded-xl shadow-lg border border-slate-200 dark:border-slate-800 overflow-hidden">

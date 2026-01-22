@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaPaperPlane, FaSmile, FaArrowLeft, FaEllipsisV } from 'react-icons/fa';
+import { FaPaperPlane, FaSmile, FaArrowLeft, FaEllipsisV, FaTrash } from 'react-icons/fa';
 import chatApi from '../../api/chat';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
 import MessageBubble from './MessageBubble';
 import EmojiPicker from 'emoji-picker-react';
 
-const ChatWindow = ({ chat, onBack, onMessageSent }) => {
+const ChatWindow = ({ chat, onBack, onMessageSent, onDelete }) => {
     const { user: currentUser } = useAuth();
     const { socket } = useSocket();
 
@@ -68,7 +68,7 @@ const ChatWindow = ({ chat, onBack, onMessageSent }) => {
         const handleNewMessage = (data) => {
             if (data.conversationId === chat._id) {
                 setMessages(prev => [...prev, data.message]);
-                
+
                 // Mark seen if window is active
                 chatApi.markSeen(chat._id);
             }
@@ -196,10 +196,16 @@ const ChatWindow = ({ chat, onBack, onMessageSent }) => {
                         </p>
                     </div>
                 </div>
-                {/* Options (Future) */}
-                <button className="text-slate-400 hover:text-slate-600">
-                    <FaEllipsisV />
-                </button>
+                {/* Options */}
+                {chat._id && (
+                    <button
+                        onClick={() => onDelete(chat._id)}
+                        className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                        title="Delete Chat"
+                    >
+                        <FaTrash />
+                    </button>
+                )}
             </div>
 
             {/* Messages Area */}

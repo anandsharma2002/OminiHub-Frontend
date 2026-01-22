@@ -6,8 +6,11 @@ import KanbanBoardComponent from '../components/project/KanbanBoardComponent';
 import ContributorsComponent from '../components/project/ContributorsComponent';
 import { FaArrowLeft, FaCog, FaUsers } from 'react-icons/fa';
 
+import { useSocket } from '../context/SocketContext';
+
 const ProjectDetails = () => {
     const { id } = useParams();
+    const { socket } = useSocket();
     const [project, setProject] = useState(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('tasks'); // tasks, board, settings
@@ -26,6 +29,26 @@ const ProjectDetails = () => {
     useEffect(() => {
         fetchProject();
     }, [id]);
+
+    // Real-time Room Joining
+    useEffect(() => {
+        if (!socket || !id) return;
+
+        const roomName = `project_${id}`;
+        socket.emit('join_entity', roomName);
+
+        const handleConnect = () => {
+            console.log("Re-joining project room:", roomName);
+            socket.emit('join_entity', roomName);
+        };
+
+        socket.on('connect', handleConnect);
+
+        return () => {
+            socket.emit('leave_entity', roomName);
+            socket.off('connect', handleConnect);
+        };
+    }, [socket, id]);
 
     if (loading) return <div className="page-container flex justify-center pt-20"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-600"></div></div>;
     if (!project) return <div className="page-container text-center pt-20">Project not found</div>;

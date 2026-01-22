@@ -2,9 +2,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import ChatSidebar from '../components/chat/ChatSidebar';
 import ChatWindow from '../components/chat/ChatWindow';
 import chatApi from '../api/chat';
+import userAPI from '../api/user';
 import { useSocket } from '../context/SocketContext';
 import { useNotificationContext } from '../context/NotificationContext';
 import { useAuth } from '../context/AuthContext';
+import { FaSearch, FaTimes } from 'react-icons/fa';
 
 import { useLocation } from 'react-router-dom';
 
@@ -17,6 +19,11 @@ const ChatPage = () => {
     const [conversations, setConversations] = useState([]);
     const [activeChat, setActiveChat] = useState(null);
     const [loading, setLoading] = useState(true);
+
+    // Search State
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+    const [isSearching, setIsSearching] = useState(false);
 
     // Handle initial chat selection from navigation (e.g. Profile -> Message)
     useEffect(() => {
@@ -173,6 +180,62 @@ const ChatPage = () => {
         }
     };
 
+    // User Search Handler
+    useEffect(() => {
+        const timeoutId = setTimeout(async () => {
+            if (searchQuery.trim().length >= 2) {
+                setIsSearching(true);
+                try {
+                    const res = await userAPI.searchUsers(searchQuery);
+                    setSearchResults(res.data.users || []); // Correctly extract users array
+                } catch (error) {
+                    console.error("Search failed", error);
+                } finally {
+                    setIsSearching(false);
+                }
+            } else {
+                setSearchResults([]);
+            }
+        }, 300); // Debounce
+
+        return () => clearTimeout(timeoutId);
+    }, [searchQuery]);
+
+    const handleSelectUser = (user) => {
+        // Check if chat exists
+        const existing = conversations.find(c =>
+            c.participants.some(p => p._id === user._id)
+        );
+
+        if (existing) {
+            handleSelectChat(existing);
+        } else {
+            // Create phantom chat
+            const newChat = {
+                _id: null, // Phantom ID
+                participants: [currentUser, user],
+                lastMessage: null,
+                unreadCounts: {}
+            };
+            setActiveChat(newChat);
+        }
+        setSearchQuery(''); // Clear search
+        setSearchResults([]);
+    };
+
+    const handleDeleteChat = async (conversationId) => {
+        if (!window.confirm("Are you sure you want to delete this chat? This will remove it from your list.")) return;
+        try {
+            await chatApi.deleteConversation(conversationId);
+            setConversations(prev => prev.filter(c => c._id !== conversationId));
+            if (activeChat?._id === conversationId) {
+                setActiveChat(null);
+            }
+        } catch (error) {
+            console.error("Delete failed", error);
+        }
+    };
+
     return (
         <div className="h-[calc(100vh-var(--nav-height))] md:h-[calc(100vh-var(--nav-height)-2rem)] md:py-4 md:px-6 lg:px-8 max-w-7xl mx-auto overflow-hidden flex flex-col md:flex-row md:gap-4 md:mt-4">
             {/* Mobile: Show List if no active chat, else hidden */}
@@ -180,16 +243,64 @@ const ChatPage = () => {
                 md:w-[350px] w-full flex flex-col bg-white dark:bg-slate-900 md:rounded-l-2xl border-r border-slate-200 dark:border-slate-800 h-full
                 ${activeChat ? 'hidden md:flex' : 'flex'}
             `}>
-                <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+                <div className="p-4 border-b border-slate-200 dark:border-slate-800 space-y-3">
                     <h2 className="font-bold text-xl text-slate-800 dark:text-white">Messages</h2>
+                    <div className="relative">
+                        <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <input
+                            type="text"
+                            placeholder="Search users..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-10 pr-10 py-2 bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/50"
+                        />
+                        {searchQuery && (
+                            <button
+                                onClick={() => setSearchQuery('')}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                            >
+                                <FaTimes />
+                            </button>
+                        )}
+                    </div>
                 </div>
 
-                <ChatSidebar
-                    conversations={conversations}
-                    activeChatId={activeChat?._id}
-                    onSelectChat={handleSelectChat}
-                    loading={loading}
-                />
+                {searchQuery ? (
+                    <div className="flex-1 overflow-y-auto p-2">
+                        {isSearching ? (
+                            <div className="text-center p-4 text-slate-500 text-sm">Searching...</div>
+                        ) : searchResults.length > 0 ? (
+                            searchResults.map(user => (
+                                <div
+                                    key={user._id}
+                                    onClick={() => handleSelectUser(user)}
+                                    className="flex items-center space-x-3 p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/50 cursor-pointer transition-colors"
+                                >
+                                    <div className="w-10 h-10 rounded-full bg-violet-100 dark:bg-slate-700 flex items-center justify-center text-violet-600 dark:text-violet-400 font-bold">
+                                        {user.profile?.image ? (
+                                            <img src={user.profile.image} alt={user.username} className="w-full h-full rounded-full object-cover" />
+                                        ) : (
+                                            user.username[0].toUpperCase()
+                                        )}
+                                    </div>
+                                    <div>
+                                        <p className="font-semibold text-slate-900 dark:text-white text-sm">{user.firstName} {user.lastName}</p>
+                                        <p className="text-xs text-slate-500">@{user.username}</p>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="text-center p-4 text-slate-500 text-sm">No users found</div>
+                        )}
+                    </div>
+                ) : (
+                    <ChatSidebar
+                        conversations={conversations}
+                        activeChatId={activeChat?._id}
+                        onSelectChat={handleSelectChat}
+                        loading={loading}
+                    />
+                )}
             </div>
 
             {/* Chat Window */}
@@ -202,6 +313,7 @@ const ChatPage = () => {
                         chat={activeChat}
                         onBack={() => setActiveChat(null)}
                         onMessageSent={handleMessageSent}
+                        onDelete={handleDeleteChat}
                     />
                 ) : (
                     <div className="hidden md:flex flex-col items-center justify-center h-full text-slate-400">

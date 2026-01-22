@@ -77,7 +77,7 @@ const Dashboard = () => {
                             <p className="text-slate-900 dark:text-white font-medium text-lg truncate" title={user?.email}>
                                 {user?.email}
                             </p>
-                            <p className="text-slate-500 text-sm">Role: {user?.role || 'User'}</p>
+
                         </div>
                     </div>
                     <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">

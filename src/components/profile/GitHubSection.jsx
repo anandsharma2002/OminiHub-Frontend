@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { FaGithub, FaStar, FaCodeBranch, FaCircle } from 'react-icons/fa';
 import api from '../../api/axios';
 
-const GitHubSection = ({ username, isOwner, visibleRepos = [], onToggleRepo, onCreateProject }) => {
+const GitHubSection = ({ username, isOwner, visibleRepos = [], isPublic, onToggleRepo, onTogglePublic, onCreateProject }) => {
     const [data, setData] = useState(null);
     const [visibleCount, setVisibleCount] = useState(6);
 
@@ -53,9 +53,30 @@ const GitHubSection = ({ username, isOwner, visibleRepos = [], onToggleRepo, onC
         <div className="space-y-6">
             {/* Stats Header */}
             <div className="card-glass p-6">
-                <div className="flex items-center space-x-3 mb-6">
-                    <FaGithub className="text-3xl text-slate-800 dark:text-white" />
-                    <h3 className="text-xl font-bold text-slate-900 dark:text-white">GitHub Activity</h3>
+                <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center space-x-3">
+                        <FaGithub className="text-3xl text-slate-800 dark:text-white" />
+                        <div>
+                            <h3 className="text-xl font-bold text-slate-900 dark:text-white">GitHub Activity</h3>
+                            {isOwner && (
+                                <p className="text-xs text-slate-500">
+                                    Status: <span className={isPublic ? "text-violet-500 font-bold" : "text-slate-400 font-bold"}>{isPublic ? "Visible to Everyone" : "Private (Visible only to you)"}</span>
+                                </p>
+                            )}
+                        </div>
+                    </div>
+
+                    {isOwner && onTogglePublic && (
+                        <div className="flex items-center space-x-2">
+                            <span className="text-xs font-medium text-slate-500 uppercase hidden sm:inline">Public Visibility</span>
+                            <button
+                                onClick={onTogglePublic}
+                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 focus:outline-none ${isPublic ? 'bg-violet-600' : 'bg-slate-300 dark:bg-slate-700'}`}
+                            >
+                                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 shadow-sm ${isPublic ? 'translate-x-6' : 'translate-x-1'}`} />
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -103,7 +124,7 @@ const GitHubSection = ({ username, isOwner, visibleRepos = [], onToggleRepo, onC
                                                 </h4>
 
                                                 <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
-                                                    {isOwner ? (
+                                                    {isOwner && onToggleRepo ? (
                                                         <div
                                                             className={`
                                                                 flex items-center gap-2 px-2 py-1 rounded-full border transition-all cursor-pointer shadow-sm

@@ -46,10 +46,20 @@ const getUnreadCount = async () => {
     }
 };
 
+const deleteConversation = async (conversationId) => {
+    try {
+        const response = await axios.delete(`/chat/${conversationId}`);
+        return response.data;
+    } catch (error) {
+        throw error.response?.data?.message || 'Failed to delete conversation';
+    }
+};
+
 export default {
     getConversations,
     getMessages,
     sendMessage,
     markSeen,
-    getUnreadCount
+    getUnreadCount,
+    deleteConversation
 };

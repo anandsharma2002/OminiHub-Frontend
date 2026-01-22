@@ -16,6 +16,14 @@ const userAPI = {
             },
         });
         return response.data;
+    },
+    toggleGithubVisibility: async () => {
+        const response = await axios.put('/users/github-visibility');
+        return response.data;
+    },
+    toggleRepoVisibility: async (repoId) => {
+        const response = await axios.put('/users/github-repos', { repoId });
+        return response.data;
     }
 };
 
