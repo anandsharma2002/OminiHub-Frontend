@@ -124,9 +124,7 @@ const Profile = () => {
                     <h1 className="text-3xl font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
                         My Profile
                     </h1>
-                    <p className="text-slate-500 dark:text-slate-400 mt-1">
-                        View and manage your personal information.
-                    </p>
+
                 </div>
                 {!isEditing ? (
                     <button

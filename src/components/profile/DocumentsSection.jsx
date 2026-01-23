@@ -4,12 +4,14 @@ import DocumentCard from '../documents/DocumentCard';
 import EditDocumentModal from '../documents/EditDocumentModal';
 import { useSocket } from '../../context/SocketContext';
 import { FaFileAlt } from 'react-icons/fa';
+import { useConfirm } from '../../context/ConfirmContext';
 
 const DocumentsSection = ({ userId, isOwner }) => {
     const [documents, setDocuments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [editDoc, setEditDoc] = useState(null);
     const { socket } = useSocket();
+    const { showConfirm } = useConfirm();
 
     useEffect(() => {
         fetchDocuments();
@@ -64,7 +66,8 @@ const DocumentsSection = ({ userId, isOwner }) => {
     };
 
     const handleDelete = async (docId) => {
-        if (!window.confirm("Are you sure you want to delete this document?")) return;
+        const isConfirmed = await showConfirm("Are you sure you want to delete this document?", "Delete Document", "danger");
+        if (!isConfirmed) return;
         try {
             await docAPI.deleteDocument(docId);
             // Optimistic update

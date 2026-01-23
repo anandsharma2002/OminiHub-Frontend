@@ -6,6 +6,8 @@ import DocumentCard from '../components/documents/DocumentCard';
 import AddDocumentModal from '../components/documents/AddDocumentModal';
 import EditDocumentModal from '../components/documents/EditDocumentModal';
 import { useSocket } from '../context/SocketContext';
+import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
 
 const Documents = () => {
     const [docs, setDocs] = useState([]);
@@ -16,6 +18,8 @@ const Documents = () => {
     const [editingDoc, setEditingDoc] = useState(null);
     const { setSidebarOpen } = useOutletContext();
     const { socket } = useSocket();
+    const { success, error: toastError } = useToast();
+    const { showConfirm } = useConfirm();
 
     const fetchDocs = async () => {
         setLoading(true);
@@ -63,12 +67,14 @@ const Documents = () => {
     }, [socket]);
 
     const handleDelete = async (id) => {
-        if (window.confirm('Are you sure you want to delete this document?')) {
+        const isConfirmed = await showConfirm('Are you sure you want to delete this document?', 'Delete Document', 'danger');
+        if (isConfirmed) {
             try {
                 await docsApi.deleteDocument(id);
                 setDocs(docs.filter(d => d._id !== id));
+                success('Document deleted');
             } catch (error) {
-                alert('Failed to delete: ' + error);
+                toastError('Failed to delete: ' + error);
             }
         }
     };

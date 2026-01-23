@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import taskAPI from '../../api/task';
 import boardAPI from '../../api/board';
-import { FaPlus, FaCheckCircle, FaCircle, FaChevronRight, FaChevronDown, FaTrash, FaTicketAlt } from 'react-icons/fa';
+import { FaPlus, FaCheckCircle, FaCircle, FaChevronRight, FaChevronDown, FaTrash, FaTicketAlt, FaEdit, FaTimes, FaSave } from 'react-icons/fa';
 import { useSocket } from '../../context/SocketContext';
+import { useToast } from '../../context/ToastContext';
+import { useConfirm } from '../../context/ConfirmContext';
 
 // Recursive Task Item Component
-const TaskItem = ({ task, allTasks, level, onDelete, onConvert, onAddSub, onShowForm, showCreateForm, onAddSubmit, onCancelForm, newTaskState, setNewTaskState }) => {
+const TaskItem = ({ task, allTasks, level, onDelete, onUpdate, onConvert, onAddSub, onShowForm, showCreateForm, onAddSubmit, onCancelForm, newTaskState, setNewTaskState }) => {
     const [isOpen, setIsOpen] = useState(false); // Default collapsed
+    const [isEditing, setIsEditing] = useState(false);
+    const [editTitle, setEditTitle] = useState(task.title);
 
     // Find direct children
     const children = allTasks.filter(t => t.parentTask === task._id);
@@ -25,6 +29,12 @@ const TaskItem = ({ task, allTasks, level, onDelete, onConvert, onAddSub, onShow
         // Prevent toggle if clicking buttons
         if (e.target.closest('button') || e.target.closest('form') || e.target.closest('input')) return;
         if (isCollapsible) setIsOpen(!isOpen);
+    };
+
+    const handleEditSubmit = (e) => {
+        e.preventDefault();
+        onUpdate(task._id, { title: editTitle });
+        setIsEditing(false);
     };
 
     const isHeading = task.type === 'Heading';
@@ -75,9 +85,24 @@ const TaskItem = ({ task, allTasks, level, onDelete, onConvert, onAddSub, onShow
                         </div>
                     )}
 
-                    <span className="truncate">{task.title}</span>
+                    {isEditing ? (
+                        <form onSubmit={handleEditSubmit} className="flex-1 flex items-center space-x-2">
+                            <input
+                                autoFocus
+                                type="text"
+                                className="flex-1 bg-white dark:bg-slate-900 border border-violet-500 rounded px-2 py-0.5 text-sm focus:outline-none"
+                                value={editTitle}
+                                onChange={(e) => setEditTitle(e.target.value)}
+                                onClick={(e) => e.stopPropagation()}
+                            />
+                            <button type="submit" className="text-green-600 hover:text-green-700 p-1"><FaSave size={14} /></button>
+                            <button type="button" onClick={(e) => { e.stopPropagation(); setIsEditing(false); setEditTitle(task.title); }} className="text-red-500 hover:text-red-600 p-1"><FaTimes size={14} /></button>
+                        </form>
+                    ) : (
+                        <span className="truncate" onDoubleClick={() => setIsEditing(true)} title="Double click to edit">{task.title}</span>
+                    )}
 
-                    {task.isTicket && (
+                    {task.isTicket && !isEditing && (
                         <span className="text-xs bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-full flex items-center shrink-0">
                             <FaTicketAlt className="mr-1" size={10} /> Ticket
                         </span>
@@ -85,6 +110,13 @@ const TaskItem = ({ task, allTasks, level, onDelete, onConvert, onAddSub, onShow
                 </div>
 
                 <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity space-x-2 shrink-0">
+                    <button
+                        onClick={(e) => { e.stopPropagation(); setIsEditing(true); }}
+                        className="text-slate-400 hover:text-violet-600 p-1"
+                        title="Edit"
+                    >
+                        <FaEdit size={14} />
+                    </button>
                     {/* Add Buttons */}
                     {task.type === 'Heading' && (
                         <>
@@ -156,6 +188,7 @@ const TaskItem = ({ task, allTasks, level, onDelete, onConvert, onAddSub, onShow
                             allTasks={allTasks}
                             level={level + 1}
                             onDelete={onDelete}
+                            onUpdate={onUpdate}
                             onConvert={onConvert}
                             onAddSub={onAddSub}
                             onShowForm={onShowForm}
@@ -177,6 +210,8 @@ const TaskListComponent = ({ projectId }) => {
     const [loading, setLoading] = useState(true);
     const [showCreateForm, setShowCreateForm] = useState(null); // { parentId, type } or null
     const { socket } = useSocket();
+    const { success, error: toastError } = useToast();
+    const { showConfirm } = useConfirm();
 
     // Form state
     const [newTask, setNewTask] = useState({ title: '', description: '', deadline: '', assignedTo: '' });
@@ -242,18 +277,36 @@ const TaskListComponent = ({ projectId }) => {
             setShowCreateForm(null);
             setNewTask({ title: '', description: '', deadline: '', assignedTo: '' });
             fetchTasks();
+            success('Task created successfully');
         } catch (error) {
-            alert("Failed to create task");
+            toastError("Failed to create task");
         }
     };
 
     const handleDeleteTask = async (taskId) => {
-        if (!window.confirm("Are you sure you want to delete this task? Sub-tasks will also be deleted.")) return;
+        const isConfirmed = await showConfirm(
+            "Are you sure you want to delete this task? Sub-tasks will also be deleted.",
+            "Delete Task",
+            "danger"
+        );
+        if (!isConfirmed) return;
+
         try {
             await taskAPI.deleteTask(taskId);
             fetchTasks(); // Optimistic update handled by socket usually, but manual refresh safe
+            success('Task deleted successfully');
         } catch (error) {
-            alert("Failed to delete task");
+            toastError("Failed to delete task");
+        }
+    };
+
+    const handleUpdateTask = async (taskId, updates) => {
+        try {
+            await taskAPI.updateTask(taskId, updates);
+            fetchTasks();
+        } catch (error) {
+            console.error("Failed to update task", error);
+            toastError("Failed to update task");
         }
     };
 
@@ -261,10 +314,10 @@ const TaskListComponent = ({ projectId }) => {
         try {
             await boardAPI.createTicket({ taskId, projectId });
             // Socket handles update?
-            alert("Ticket created on board!");
+            success("Ticket created on board!");
             fetchTasks();
         } catch (error) {
-            alert(error.response?.data?.message || "Failed to create ticket");
+            toastError(error.response?.data?.message || "Failed to create ticket");
         }
     };
 
@@ -314,6 +367,7 @@ const TaskListComponent = ({ projectId }) => {
                         allTasks={tasks}
                         level={0}
                         onDelete={handleDeleteTask}
+                        onUpdate={handleUpdateTask}
                         onConvert={convertToTicket}
                         onShowForm={setShowCreateForm}
                         showCreateForm={showCreateForm}

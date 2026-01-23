@@ -3,11 +3,13 @@ import { FaUser, FaCheck, FaTimes } from 'react-icons/fa';
 import projectAPI from '../../api/project';
 import { respondToFollowRequest } from '../../api/social';
 import { formatDistanceToNow } from 'date-fns';
+import { useToast } from '../../context/ToastContext';
 
 const NotificationItem = ({ notification, onMarkRead }) => {
     const { sender, type, message, createdAt, isRead, relatedId, _id, metadata } = notification;
 
     const [processed, setProcessed] = useState(false);
+    const { error: toastError } = useToast();
 
     const handleAction = async (status) => {
         try {
@@ -27,7 +29,7 @@ const NotificationItem = ({ notification, onMarkRead }) => {
         } catch (err) {
             console.error("Failed to respond:", err);
             const msg = err.response?.data?.message || "Failed to process request";
-            alert(msg);
+            toastError(msg);
 
             // If already processed/invalid, hide buttons
             if (msg.includes("already") || msg.includes("not found")) {

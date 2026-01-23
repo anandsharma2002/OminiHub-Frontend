@@ -6,6 +6,7 @@ import userAPI from '../api/user';
 import { useSocket } from '../context/SocketContext';
 import { useNotificationContext } from '../context/NotificationContext';
 import { useAuth } from '../context/AuthContext';
+import { useConfirm } from '../context/ConfirmContext';
 import { FaSearch, FaTimes } from 'react-icons/fa';
 
 import { useLocation } from 'react-router-dom';
@@ -15,6 +16,7 @@ const ChatPage = () => {
     const { socket } = useSocket();
     const { refreshChatCount } = useNotificationContext();
     const location = useLocation();
+    const { showConfirm } = useConfirm();
 
     const [conversations, setConversations] = useState([]);
     const [activeChat, setActiveChat] = useState(null);
@@ -224,7 +226,8 @@ const ChatPage = () => {
     };
 
     const handleDeleteChat = async (conversationId) => {
-        if (!window.confirm("Are you sure you want to delete this chat? This will remove it from your list.")) return;
+        const isConfirmed = await showConfirm("Are you sure you want to delete this chat? This will remove it from your list.", "Delete Chat", "danger");
+        if (!isConfirmed) return;
         try {
             await chatApi.deleteConversation(conversationId);
             setConversations(prev => prev.filter(c => c._id !== conversationId));
