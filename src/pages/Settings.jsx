@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import ThemeToggle from '../components/common/ThemeToggle';
 import { FaMoon, FaSun, FaPalette, FaUser, FaBell, FaShieldAlt } from 'react-icons/fa';
 
+import { authAPI } from '../api/auth';
+
 const Settings = () => {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = React.useState('appearance');
@@ -35,10 +37,6 @@ const Settings = () => {
                         >
                             <FaUser />
                             <span>Profile</span>
-                        </button>
-                        <button className="w-full flex items-center space-x-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl font-medium transition-colors">
-                            <FaBell />
-                            <span>Notifications</span>
                         </button>
                         <button
                             onClick={() => setActiveTab('security')}
@@ -104,7 +102,7 @@ const SecuritySettings = () => {
     const [loading, setLoading] = React.useState(false);
 
     // Import authAPI here or use context if available
-    const { authAPI } = require('../api/auth');
+
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });

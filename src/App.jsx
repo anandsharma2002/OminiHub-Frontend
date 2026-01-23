@@ -3,6 +3,9 @@ import { HashRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
 import { NotificationProvider } from './context/NotificationContext';
+import { ToastProvider } from './context/ToastContext';
+import { PromptProvider } from './context/PromptContext';
+import { ConfirmProvider } from './context/ConfirmContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import Navbar from './components/layout/Navbar';
 
@@ -36,42 +39,48 @@ function App() {
         <AuthProvider>
             <SocketProvider>
                 <NotificationProvider>
-                    <GlobalSocketListener />
-                    <ThemeProvider>
-                        <HashRouter>
-                            <div className="min-h-screen transition-colors duration-300 bg-slate-50 dark:bg-[#020617] text-slate-900 dark:text-slate-100">
-                                <Navbar />
-                                <Routes>
-                                    {/* Public Routes */}
-                                    <Route path="/" element={<Home />} />
-                                    <Route path="/features" element={<Features />} />
-                                    <Route path="/pricing" element={<Pricing />} />
-                                    <Route path="/login" element={<Login />} />
-                                    <Route path="/signup" element={<Signup />} />
-                                    <Route path="/forgot-password" element={<ForgotPassword />} />
+                    <ToastProvider>
+                        <PromptProvider>
+                            <ConfirmProvider>
+                                <GlobalSocketListener />
+                                <ThemeProvider>
+                                    <HashRouter>
+                                        <div className="min-h-screen transition-colors duration-300 bg-slate-50 dark:bg-[#020617] text-slate-900 dark:text-slate-100">
+                                            <Navbar />
+                                            <Routes>
+                                                {/* Public Routes */}
+                                                <Route path="/" element={<Home />} />
+                                                <Route path="/features" element={<Features />} />
+                                                <Route path="/pricing" element={<Pricing />} />
+                                                <Route path="/login" element={<Login />} />
+                                                <Route path="/signup" element={<Signup />} />
+                                                <Route path="/forgot-password" element={<ForgotPassword />} />
 
-                                    {/* Protected Routes */}
-                                    <Route element={<ProtectedRoute />}>
-                                        <Route element={<DashboardLayout />}>
-                                            <Route path="/dashboard" element={<Dashboard />} />
-                                            <Route path="/projects" element={<ProjectsPage />} />
-                                            <Route path="/projects/:id" element={<ProjectDetails />} />
-                                            <Route path="/docs" element={<Documents />} />
-                                            <Route path="/settings" element={<Settings />} />
-                                            <Route path="/profile" element={<Profile />} />
-                                            <Route path="/github" element={<GitHubPage />} />
-                                            <Route path="/notifications" element={<NotificationsPage />} />
-                                            <Route path="/chat" element={<ChatPage />} />
-                                            <Route path="/user/:id" element={<UserProfile />} />
-                                        </Route>
-                                    </Route>
+                                                {/* Protected Routes */}
+                                                <Route element={<ProtectedRoute />}>
+                                                    <Route element={<DashboardLayout />}>
+                                                        <Route path="/dashboard" element={<Dashboard />} />
+                                                        <Route path="/projects" element={<ProjectsPage />} />
+                                                        <Route path="/projects/:id" element={<ProjectDetails />} />
+                                                        <Route path="/docs" element={<Documents />} />
+                                                        <Route path="/settings" element={<Settings />} />
+                                                        <Route path="/profile" element={<Profile />} />
+                                                        <Route path="/github" element={<GitHubPage />} />
+                                                        <Route path="/notifications" element={<NotificationsPage />} />
+                                                        <Route path="/chat" element={<ChatPage />} />
+                                                        <Route path="/user/:id" element={<UserProfile />} />
+                                                    </Route>
+                                                </Route>
 
-                                    {/* 404 Route */}
-                                    <Route path="*" element={<Home />} />
-                                </Routes>
-                            </div>
-                        </HashRouter>
-                    </ThemeProvider>
+                                                {/* 404 Route */}
+                                                <Route path="*" element={<Home />} />
+                                            </Routes>
+                                        </div>
+                                    </HashRouter>
+                                </ThemeProvider>
+                            </ConfirmProvider>
+                        </PromptProvider>
+                    </ToastProvider>
                 </NotificationProvider>
             </SocketProvider>
         </AuthProvider>

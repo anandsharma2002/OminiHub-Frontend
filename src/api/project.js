@@ -5,6 +5,8 @@ const projectAPI = {
     getProjects: () => axios.get('/projects'),
     getProject: (id) => axios.get(`/projects/${id}`),
     createProject: (data) => axios.post('/projects', data),
+    updateProject: (id, data) => axios.put(`/projects/${id}`, data),
+    deleteProject: (id) => axios.delete(`/projects/${id}`),
 
     // Invitations
     inviteUser: (id, userId) => axios.post(`/projects/${id}/invite`, { userId }),

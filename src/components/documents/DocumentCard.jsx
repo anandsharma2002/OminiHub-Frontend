@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FaFilePdf, FaFileImage, FaFileAlt, FaDownload, FaTrash, FaPen, FaLock, FaGlobe } from 'react-icons/fa';
 import docsApi from '../../api/docs';
+import { useToast } from '../../context/ToastContext';
 
 const getFileIcon = (mimeType) => {
     if (mimeType.includes('pdf')) return <FaFilePdf className="text-red-500 text-3xl" />;
@@ -10,6 +11,7 @@ const getFileIcon = (mimeType) => {
 
 const DocumentCard = ({ doc, onDelete, onUpdate }) => {
     const [downloading, setDownloading] = useState(false);
+    const { error: toastError } = useToast();
 
     const handleDownload = async () => {
         setDownloading(true);
@@ -17,7 +19,7 @@ const DocumentCard = ({ doc, onDelete, onUpdate }) => {
             const url = await docsApi.downloadDocument(doc._id);
             window.open(url, '_blank');
         } catch (error) {
-            alert('Failed to download: ' + error);
+            toastError('Failed to download: ' + error);
         } finally {
             setDownloading(false);
         }
