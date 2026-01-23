@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import projectAPI from '../api/project';
 import { FaPlus, FaFolder, FaCodeBranch, FaUsers, FaArrowRight, FaSearch, FaTimes } from 'react-icons/fa';
 import { useToast } from '../context/ToastContext';
+import { useSocket } from '../context/SocketContext';
 
 const ProjectsPage = () => {
     const [projects, setProjects] = useState([]);
@@ -10,6 +11,7 @@ const ProjectsPage = () => {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const navigate = useNavigate();
     const { success, error: toastError } = useToast();
+    const { socket } = useSocket();
 
     const location = useLocation();
 
@@ -38,6 +40,25 @@ const ProjectsPage = () => {
             navigate(location.pathname, { replace: true, state: {} });
         }
     }, [location.state]);
+
+    // WebSocket Listener for Real-time Updates
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleProjectCreated = (newProject) => {
+            // Option 1: Optimistically update state (faster)
+            setProjects(prev => [newProject, ...prev]);
+
+            // Option 2: Refetch to be safe (ensure consistency)
+            // fetchProjects(); 
+        };
+
+        socket.on('project_created', handleProjectCreated);
+
+        return () => {
+            socket.off('project_created', handleProjectCreated);
+        };
+    }, [socket]);
 
     const fetchProjects = async () => {
         try {
