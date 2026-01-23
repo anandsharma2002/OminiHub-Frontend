@@ -3,12 +3,16 @@ import taskAPI from '../../api/task';
 import boardAPI from '../../api/board';
 import { FaPlus, FaCheckCircle, FaCircle, FaChevronRight, FaChevronDown, FaEllipsisH, FaTicketAlt, FaTrash } from 'react-icons/fa';
 import { useSocket } from '../../context/SocketContext';
+import { useToast } from '../../context/ToastContext';
+import { useConfirm } from '../../context/ConfirmContext';
 
 const TaskListComponent = ({ projectId }) => {
     const [tasks, setTasks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showCreateForm, setShowCreateForm] = useState(null); // { parentId, type } or null
     const { socket } = useSocket();
+    const { success, error: toastError } = useToast();
+    const { showConfirm } = useConfirm();
 
     // Form state
     const [newTask, setNewTask] = useState({ title: '', description: '', deadline: '', assignedTo: '' });
@@ -82,17 +86,24 @@ const TaskListComponent = ({ projectId }) => {
             setNewTask({ title: '', description: '', deadline: '', assignedTo: '' });
             fetchTasks();
         } catch (error) {
-            alert("Failed to create task");
+            toastError("Failed to create task");
         }
     };
 
     const handleDeleteTask = async (taskId) => {
-        if (!window.confirm("Are you sure you want to delete this task? Sub-tasks will also be deleted.")) return;
+        const isConfirmed = await showConfirm(
+            "Are you sure you want to delete this task? Sub-tasks will also be deleted.",
+            "Delete Task",
+            "danger"
+        );
+        if (!isConfirmed) return;
+
         try {
             await taskAPI.deleteTask(taskId);
-            fetchTasks();
+            fetchTasks(); // Optimistic update handled by socket usually, but manual refresh safe
+            success('Task deleted successfully');
         } catch (error) {
-            alert("Failed to delete task");
+            toastError("Failed to delete task");
         }
     };
 
@@ -100,9 +111,9 @@ const TaskListComponent = ({ projectId }) => {
         try {
             await boardAPI.createTicket({ taskId, projectId });
             fetchTasks(); // Refresh to update isTicket status
-            alert("Ticket created on board!");
+            success("Ticket created on board!");
         } catch (error) {
-            alert(error.response?.data?.message || "Failed to create ticket");
+            toastError(error.response?.data?.message || "Failed to create ticket");
         }
     };
 

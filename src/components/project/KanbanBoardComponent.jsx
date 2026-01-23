@@ -22,6 +22,9 @@ import projectAPI from '../../api/project';
 import taskAPI from '../../api/task';
 import { FaPlus, FaEllipsisH, FaTrash, FaCalendarAlt, FaUserCircle } from 'react-icons/fa';
 import { useSocket } from '../../context/SocketContext';
+import { useToast } from '../../context/ToastContext';
+import { usePrompt } from '../../context/PromptContext';
+import { useConfirm } from '../../context/ConfirmContext';
 
 // --- Sortable Ticket Item ---
 const SortableTicket = ({ ticket, onDelete, onUpdate, members }) => {
@@ -219,9 +222,9 @@ const Column = ({ column, tickets, onDeleteTicket, onUpdateTicket, members, onDe
 
     const handleDelete = () => {
         if (tickets.length > 0) {
-            if(!window.confirm("This column contains tickets. Deleting it will delete all tickets within it. Continue?")) return;
+            if (!window.confirm("This column contains tickets. Deleting it will delete all tickets within it. Continue?")) return;
         } else {
-             if(!window.confirm("Are you sure you want to delete this column?")) return;
+            if (!window.confirm("Are you sure you want to delete this column?")) return;
         }
         onDeleteColumn(column._id);
     };
@@ -238,10 +241,10 @@ const Column = ({ column, tickets, onDeleteTicket, onUpdateTicket, members, onDe
                     {column.name}
                     <span className="ml-3 bg-white dark:bg-slate-800 text-violet-600 dark:text-violet-400 text-xs px-2.5 py-0.5 rounded-full font-extrabold shadow-sm">{tickets.length}</span>
                 </h3>
-                
+
                 {/* Column Menu */}
                 <div className="relative" ref={menuRef} onPointerDown={(e) => e.stopPropagation()}>
-                    <button 
+                    <button
                         onClick={() => setShowMenu(!showMenu)}
                         className="text-slate-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-800"
                     >
@@ -291,6 +294,9 @@ const KanbanBoardComponent = ({ projectId }) => {
     const [activeId, setActiveId] = useState(null);
     const [loading, setLoading] = useState(true);
     const { socket } = useSocket();
+    const { success, error: toastError } = useToast();
+    const { showPrompt } = usePrompt();
+    const { showConfirm } = useConfirm();
 
     const sensors = useSensors(
         useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -373,12 +379,14 @@ const KanbanBoardComponent = ({ projectId }) => {
     };
 
     const handleDeleteTicket = async (ticketId) => {
-        if (!window.confirm("Are you sure you want to remove this ticket from the board?")) return;
+        const isConfirmed = await showConfirm("Are you sure you want to remove this ticket from the board?", "Remove Ticket", "danger");
+        if (!isConfirmed) return;
         try {
             await boardAPI.deleteTicket(ticketId);
             setTickets(prev => prev.filter(t => t._id !== ticketId));
+            success('Ticket deleted');
         } catch (error) {
-            alert("Failed to delete ticket");
+            toastError("Failed to delete ticket");
         }
     };
 
@@ -387,17 +395,30 @@ const KanbanBoardComponent = ({ projectId }) => {
             await taskAPI.updateTask(taskId, updates);
             // Optimistic update if needed, but socket will handle it
         } catch (error) {
-            alert("Failed to update ticket");
+            toastError("Failed to update ticket");
         }
     };
 
     const handleDeleteColumn = async (columnId) => {
+        const column = columns.find(c => c._id === columnId);
+        if (!column) return;
+
+        let message = "Are you sure you want to delete this column?";
+        const ticketsInCol = tickets.filter(t => t.column === columnId);
+        if (ticketsInCol.length > 0) {
+            message = "This column contains tickets. Deleting it will delete all tickets within it. Continue?";
+        }
+
+        const isConfirmed = await showConfirm(message, "Delete Column", "danger");
+        if (!isConfirmed) return;
+
         try {
             await boardAPI.deleteColumn(columnId);
             setColumns(prev => prev.filter(c => c._id !== columnId));
-            setTickets(prev => prev.filter(t => t.column !== columnId)); 
+            setTickets(prev => prev.filter(t => t.column !== columnId));
+            success('Column deleted');
         } catch (error) {
-            alert("Failed to delete column");
+            toastError("Failed to delete column");
         }
     };
 
@@ -432,19 +453,19 @@ const KanbanBoardComponent = ({ projectId }) => {
                 // BUT I need the TARGET index. 
                 // Actually arrayMove(columns, oldIndex, newIndex) returns the new array.
                 // The backend API expects just the new position index (integer).
-                
+
                 try {
-                   // Correct way:
-                   const oldIdx = columns.findIndex(c => c._id === activeId);
-                   const newIdx = columns.findIndex(c => c._id === overId);
-                   
-                   await boardAPI.moveColumn({
-                       columnId: activeId,
-                       newOrder: newIdx 
-                   });
+                    // Correct way:
+                    const oldIdx = columns.findIndex(c => c._id === activeId);
+                    const newIdx = columns.findIndex(c => c._id === overId);
+
+                    await boardAPI.moveColumn({
+                        columnId: activeId,
+                        newOrder: newIdx
+                    });
                 } catch (error) {
-                   console.error("Move column failed", error);
-                   fetchBoard();
+                    console.error("Move column failed", error);
+                    fetchBoard();
                 }
             }
             return;
@@ -484,13 +505,14 @@ const KanbanBoardComponent = ({ projectId }) => {
     };
 
     const createColumn = async () => {
-        const name = prompt("Enter column name:");
+        const name = await showPrompt("Enter column name:", "", "e.g., In Progress");
         if (name) {
             try {
                 await boardAPI.createColumn({ projectId, name });
-                fetchBoard();
+                // Socket update expected
+                success('Column created');
             } catch (error) {
-                alert("Failed to create column");
+                toastError("Failed to create column");
             }
         }
     };
@@ -532,7 +554,7 @@ const KanbanBoardComponent = ({ projectId }) => {
                         {activeId ? (
                             activeColumn ? (
                                 <div className="w-80 h-full bg-slate-100/90 dark:bg-slate-900/90 rounded-2xl border-2 border-violet-500 shadow-2xl backdrop-blur-xl opacity-90 rotate-3 cursor-grabbing p-4">
-                                     <h3 className="font-bold text-slate-800 dark:text-slate-100 flex items-center text-sm uppercase tracking-wider mb-2">
+                                    <h3 className="font-bold text-slate-800 dark:text-slate-100 flex items-center text-sm uppercase tracking-wider mb-2">
                                         {activeColumn.name}
                                         <span className="ml-3 bg-white dark:bg-slate-800 text-violet-600 dark:text-violet-400 text-xs px-2.5 py-0.5 rounded-full font-extrabold shadow-sm">
                                             {tickets.filter(t => t.column === activeColumn._id).length}
