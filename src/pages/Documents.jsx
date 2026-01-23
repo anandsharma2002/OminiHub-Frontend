@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { FaPlus, FaSearch, FaBars } from 'react-icons/fa';
+import { FaPlus, FaSearch, FaBars, FaTimes } from 'react-icons/fa';
 import docsApi from '../api/docs';
 import DocumentCard from '../components/documents/DocumentCard';
 import AddDocumentModal from '../components/documents/AddDocumentModal';
 import EditDocumentModal from '../components/documents/EditDocumentModal';
 import { useSocket } from '../context/SocketContext';
+import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
 
 const Documents = () => {
     const [docs, setDocs] = useState([]);
@@ -16,6 +18,8 @@ const Documents = () => {
     const [editingDoc, setEditingDoc] = useState(null);
     const { setSidebarOpen } = useOutletContext();
     const { socket } = useSocket();
+    const { success, error: toastError } = useToast();
+    const { showConfirm } = useConfirm();
 
     const fetchDocs = async () => {
         setLoading(true);
@@ -63,12 +67,14 @@ const Documents = () => {
     }, [socket]);
 
     const handleDelete = async (id) => {
-        if (window.confirm('Are you sure you want to delete this document?')) {
+        const isConfirmed = await showConfirm('Are you sure you want to delete this document?', 'Delete Document', 'danger');
+        if (isConfirmed) {
             try {
                 await docsApi.deleteDocument(id);
                 setDocs(docs.filter(d => d._id !== id));
+                success('Document deleted');
             } catch (error) {
-                alert('Failed to delete: ' + error);
+                toastError('Failed to delete: ' + error);
             }
         }
     };
@@ -111,8 +117,16 @@ const Documents = () => {
                             placeholder="Search documents..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="input-field pl-10 py-2.5 w-64"
+                            className="input-field pl-10 pr-10 py-2.5 w-64"
                         />
+                        {search && (
+                            <button
+                                onClick={() => setSearch('')}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                            >
+                                <FaTimes />
+                            </button>
+                        )}
                     </div>
                     <button
                         onClick={() => setIsAddModalOpen(true)}
@@ -132,8 +146,16 @@ const Documents = () => {
                     placeholder="Search documents..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="input-field pl-10 py-2.5"
+                    className="input-field pl-10 pr-10 py-2.5"
                 />
+                {search && (
+                    <button
+                        onClick={() => setSearch('')}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                    >
+                        <FaTimes />
+                    </button>
+                )}
             </div>
 
             {loading ? (

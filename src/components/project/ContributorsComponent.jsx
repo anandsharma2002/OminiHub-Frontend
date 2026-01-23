@@ -4,6 +4,8 @@ import { FaUserPlus, FaTrash, FaCheck, FaTimes } from 'react-icons/fa';
 import userAPI from '../../api/user';
 import { useSocket } from '../../context/SocketContext';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
+import { useConfirm } from '../../context/ConfirmContext';
 
 const ContributorsComponent = ({ project, onUpdate }) => {
     const [searchQuery, setSearchQuery] = useState('');
@@ -11,6 +13,9 @@ const ContributorsComponent = ({ project, onUpdate }) => {
     const [isSearching, setIsSearching] = useState(false);
     const { socket } = useSocket();
     const { user: currentUser } = useAuth();
+
+    const { success, error: toastError } = useToast();
+    const { showConfirm } = useConfirm();
 
     const handleSearch = async (e) => {
         setSearchQuery(e.target.value);
@@ -34,20 +39,22 @@ const ContributorsComponent = ({ project, onUpdate }) => {
             await projectAPI.inviteUser(project._id, userId);
             setSearchQuery('');
             setSearchResults([]);
-            alert("User invited!");
+            success("User invited!");
             onUpdate(); // Refresh project data immediately as fallback/confirmation
         } catch (error) {
-            alert(error.response?.data?.message || "Failed to invite user");
+            toastError(error.response?.data?.message || "Failed to invite user");
         }
     };
 
     const removeUser = async (userId, username) => {
-        if (!window.confirm(`Are you sure you want to remove ${username} from this project?`)) return;
+        const isConfirmed = await showConfirm(`Are you sure you want to remove ${username} from this project?`, "Remove Contributor", "danger");
+        if (!isConfirmed) return;
         try {
             await projectAPI.removeContributor(project._id, userId);
             // Socket will handle update
+            success("User removed");
         } catch (error) {
-            alert(error.response?.data?.message || "Failed to remove user");
+            toastError(error.response?.data?.message || "Failed to remove user");
         }
     };
 

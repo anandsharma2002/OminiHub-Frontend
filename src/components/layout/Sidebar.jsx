@@ -17,7 +17,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     const menuItems = [
         { path: '/dashboard', label: 'Dashboard', icon: <FaHome /> },
         { path: '/projects', label: 'Projects', icon: <FaProjectDiagram /> },
-        { path: '/tasks', label: 'My Tasks', icon: <FaTasks /> },
+
         {
             path: '/notifications',
             label: 'Notifications',

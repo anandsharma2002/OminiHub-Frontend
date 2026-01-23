@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { FaUserPlus, FaUserCheck, FaUserClock, FaUserTimes } from 'react-icons/fa';
 import { sendFollowRequest, getFollowStatus, unfollowUser } from '../../api/social';
 import useAuth from '../../hooks/useAuth';
+import { useConfirm } from '../../context/ConfirmContext';
 
 const FollowButton = ({ targetUserId, onStatusChange, onSuccess, refreshTrigger }) => {
     const { user } = useAuth();
+    const { showConfirm } = useConfirm();
     const [status, setStatus] = useState('loading'); // loading, none, pending, following
     const [loading, setLoading] = useState(false);
 
@@ -35,7 +37,8 @@ const FollowButton = ({ targetUserId, onStatusChange, onSuccess, refreshTrigger 
 
     const handleUnfollow = async () => {
         if (loading) return;
-        if (!window.confirm("Are you sure you want to unfollow this user?")) return;
+        const isConfirmed = await showConfirm("Are you sure you want to unfollow this user?", "Unfollow User");
+        if (!isConfirmed) return;
 
         setLoading(true);
         try {

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
-import { FaExclamationTriangle } from 'react-icons/fa';
+import { FaExclamationTriangle, FaTimes, FaCheck } from 'react-icons/fa';
 
 const ConfirmContext = createContext();
 

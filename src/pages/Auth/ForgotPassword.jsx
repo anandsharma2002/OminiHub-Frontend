@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authAPI } from '../../api/auth';
 import { FaRocket, FaEnvelope, FaLock, FaKey } from 'react-icons/fa';
+import { useToast } from '../../context/ToastContext';
 
 const ForgotPassword = () => {
     const [email, setEmail] = useState('');
@@ -12,6 +13,7 @@ const ForgotPassword = () => {
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    const { error: toastError } = useToast();
 
     const handleSendCode = async (e) => {
         e.preventDefault();
@@ -24,7 +26,7 @@ const ForgotPassword = () => {
             setMessage('Verification code sent to your email.');
         } catch (err) {
             const errorMsg = err.response?.data?.message || err.message || 'Failed to send code';
-            window.alert(`Error: ${errorMsg}`); // Debugging alert
+            toastError(`Error: ${errorMsg}`); // User facing toast
             setError(errorMsg);
         } finally {
             setLoading(false);

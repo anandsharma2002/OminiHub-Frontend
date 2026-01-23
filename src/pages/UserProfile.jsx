@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import userAPI from '../api/user';
-import docsApi from '../api/docs';
-import DocumentCard from '../components/documents/DocumentCard';
 import { useAuth } from '../context/AuthContext';
 import { FaUser, FaEnvelope, FaIdBadge, FaCalendarAlt, FaArrowLeft, FaFileAlt, FaLock, FaGithub, FaLinkedin, FaCode, FaGlobe, FaComments } from 'react-icons/fa';
 
 import GitHubSection from '../components/profile/GitHubSection';
+import DocumentsSection from '../components/profile/DocumentsSection';
 import FollowButton from '../components/social/FollowButton';
 import UserListModal from '../components/social/UserListModal';
 import { useSocket } from '../context/SocketContext';
@@ -18,9 +17,7 @@ const UserProfile = () => {
     const { socket } = useSocket();
 
     const [user, setUser] = useState(null);
-    const [docs, setDocs] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [docsLoading, setDocsLoading] = useState(true);
     const [error, setError] = useState(null);
 
     // Modal State
@@ -40,20 +37,6 @@ const UserProfile = () => {
 
     // Check if viewing own profile
     const isOwnProfile = currentUser && (currentUser._id === id || (user && currentUser._id === user._id));
-    // Filter documents
-    const publicDocs = docs.filter(doc => doc.privacy === 'public');
-    const privateDocs = docs.filter(doc => doc.privacy === 'private');
-
-    const fetchUserDocs = async () => {
-        try {
-            const res = await docsApi.getDocuments(id);
-            setDocs(res);
-        } catch (err) {
-            console.error("Failed to fetch docs", err);
-        } finally {
-            setDocsLoading(false);
-        }
-    };
 
     // Real-time Update Trigger
     const [followUpdateTrigger, setFollowUpdateTrigger] = useState(0);
@@ -62,7 +45,6 @@ const UserProfile = () => {
     useEffect(() => {
         if (id) {
             fetchUserProfile();
-            fetchUserDocs();
         }
     }, [id]);
 
@@ -74,24 +56,25 @@ const UserProfile = () => {
         const roomName = `profile_${id}`;
         socket.emit('join_entity', roomName);
 
+        const handleConnect = () => {
+            console.log("Socket reconnected, re-joining room:", roomName);
+            socket.emit('join_entity', roomName);
+        };
+
         const handleFollowUpdate = (data) => {
             console.log("Follow update received", data);
             fetchUserProfile(); // Update counts
             setFollowUpdateTrigger(prev => prev + 1); // Update button status
         };
 
-        const handleDocUpdate = () => {
-            fetchUserDocs();
-        };
-
+        socket.on('connect', handleConnect);
         socket.on('follow_update', handleFollowUpdate);
-        socket.on('document_update', handleDocUpdate);
         socket.on('github_update', handleFollowUpdate); // Refetch user profile on GitHub update
 
         return () => {
             socket.emit('leave_entity', roomName);
+            socket.off('connect', handleConnect);
             socket.off('follow_update', handleFollowUpdate);
-            socket.off('document_update', handleDocUpdate);
             socket.off('github_update', handleFollowUpdate);
         };
     }, [socket, id]);
@@ -163,12 +146,12 @@ const UserProfile = () => {
                         <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
                             {user.firstName} {user.lastName}
                         </h2>
-                        <p className="text-slate-500 dark:text-slate-400 mb-2">@{user.username}</p>
-
-                        <span className="px-3 py-1 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-300 text-sm font-medium mb-6">
-                            {user.role || 'User'}
-                        </span>
-
+                        <div className="flex flex-col items-center gap-1 mb-6">
+                            <p className="text-slate-500 dark:text-slate-400">@{user.username}</p>
+                            <p className="text-xs text-slate-400 dark:text-slate-500 font-medium bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">
+                                Joined {joinDate}
+                            </p>
+                        </div>
 
                         <div className="flex justify-center w-full gap-8 mb-6 border-b border-slate-100 dark:border-slate-800 pb-4">
                             <div
@@ -221,6 +204,14 @@ const UserProfile = () => {
                         )}
 
                         <div className="w-full space-y-4 text-left">
+                            {/* About Section Moved Here */}
+                            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                                <p className="text-xs text-slate-500 mb-1 font-bold uppercase">About</p>
+                                <p className="text-sm text-slate-600 dark:text-slate-300">
+                                    {user.profile?.bio || 'No bio available.'}
+                                </p>
+                            </div>
+
                             <div className="flex items-center space-x-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
                                 <FaEnvelope className="text-slate-400" />
                                 <div className="flex-1 min-w-0">
@@ -230,75 +221,45 @@ const UserProfile = () => {
                                     </p>
                                 </div>
                             </div>
+                            {/* Social Profiles Moved Here */}
+                            {user.profile?.socialLinks?.length > 0 && (
+                                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                                    <p className="text-xs text-slate-500 mb-2 font-bold uppercase">Social Profiles</p>
+                                    <div className="space-y-2">
+                                        {user.profile.socialLinks.map((link, index) => {
+                                            const platform = typeof link === 'object' ? link.platform : 'Website';
+                                            const url = typeof link === 'object' ? link.url : link;
 
-                            <div className="flex items-center space-x-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-                                <FaCalendarAlt className="text-slate-400" />
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-xs text-slate-500">Joined</p>
-                                    <p className="text-sm font-medium text-slate-900 dark:text-slate-200">
-                                        {joinDate}
-                                    </p>
+                                            return (
+                                                <a
+                                                    key={index}
+                                                    href={url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="flex items-center space-x-2 text-sm text-slate-600 dark:text-slate-300 hover:text-violet-600 dark:hover:text-violet-400 transition-colors"
+                                                >
+                                                    <span className="text-base">{getPlatformIcon(platform)}</span>
+                                                    <span className="truncate">{platform}</span>
+                                                </a>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
                     </div>
                 </div>
 
                 {/* Additional Info */}
                 <div className="lg:col-span-2 space-y-6">
-                    <div className="card-glass p-6">
-                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">About</h3>
-                        <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-                            {user.profile?.bio || 'No bio available yet.'}
-                        </p>
-                    </div>
 
-                    {/* Social Profiles */}
-                    {user.profile?.socialLinks?.length > 0 && (
-                        <div className="card-glass p-6">
-                            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Social Profiles</h3>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                {user.profile.socialLinks.map((link, index) => {
-                                    const platform = typeof link === 'object' ? link.platform : 'Website';
-                                    const url = typeof link === 'object' ? link.url : link;
 
-                                    return (
-                                        <a
-                                            key={index}
-                                            href={url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="flex items-center space-x-3 p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-violet-500 dark:hover:border-violet-500 transition-colors group"
-                                        >
-                                            <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 group-hover:text-violet-600 group-hover:bg-violet-50 dark:group-hover:bg-violet-900/20 transition-colors">
-                                                {getPlatformIcon(platform)}
-                                            </div>
-                                            <div>
-                                                <p className="font-medium text-slate-900 dark:text-white">{platform}</p>
-                                                <p className="text-xs text-slate-500 truncate max-w-[150px]">{url}</p>
-                                            </div>
-                                        </a>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    )}
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="card p-6 border-l-4 border-violet-500">
-                            <h3 className="text-slate-500 dark:text-slate-400 text-sm font-medium uppercase tracking-wider">Projects</h3>
-                            <p className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{user.projects?.length || 0}</p>
-                        </div>
-                        <div className="card p-6 border-l-4 border-indigo-500">
-                            <h3 className="text-slate-500 dark:text-slate-400 text-sm font-medium uppercase tracking-wider">Public Docs</h3>
-                            <p className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{publicDocs.length}</p>
-                        </div>
-                        {isOwnProfile && (
-                            <div className="card p-6 border-l-4 border-slate-500">
-                                <h3 className="text-slate-500 dark:text-slate-400 text-sm font-medium uppercase tracking-wider">Private Docs</h3>
-                                <p className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{privateDocs.length}</p>
-                            </div>
-                        )}
+
+                    {/* Documents Section */}
+                    {/* Documents Section */}
+                    <div>
+                        <DocumentsSection userId={user._id} isOwner={isOwnProfile} />
                     </div>
 
                     {/* GitHub Integration Section */}
@@ -330,11 +291,33 @@ const UserProfile = () => {
 
                             if (username) {
                                 return (
-                                    <div className="mt-8">
+                                    <div>
                                         <GitHubSection
                                             username={username}
                                             isOwner={isOwnProfile}
                                             visibleRepos={user.visibleRepositories || []}
+                                            isPublic={user.isGithubPublic}
+                                            onTogglePublic={async () => {
+                                                try {
+                                                    const res = await userAPI.toggleGithubVisibility();
+                                                    if (res.status === 'success') {
+                                                        setUser(prev => ({ ...prev, isGithubPublic: res.data.isGithubPublic }));
+                                                    }
+                                                } catch (err) {
+                                                    console.error("Failed to toggle global visibility", err);
+                                                }
+                                            }}
+                                            onToggleRepo={async (repoId) => {
+                                                try {
+                                                    const res = await userAPI.toggleRepoVisibility(repoId);
+                                                    if (res.status === 'success') {
+                                                        const { visibleRepositories, isGithubPublic } = res.data;
+                                                        setUser(prev => ({ ...prev, visibleRepositories, isGithubPublic }));
+                                                    }
+                                                } catch (err) {
+                                                    console.error("Failed to toggle repo visibility", err);
+                                                }
+                                            }}
                                         />
                                     </div>
                                 );
@@ -343,65 +326,6 @@ const UserProfile = () => {
                         return null;
                     })()}
 
-                    {/* Public Documents Section */}
-                    {(!isOwnProfile || publicDocs.length > 0) && (
-                        <div className="card-glass p-6">
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                    <FaFileAlt className="text-violet-500" /> Public Documents
-                                </h3>
-                            </div>
-
-                            {docsLoading ? (
-                                <div className="text-slate-500 animate-pulse">Loading documents...</div>
-                            ) : publicDocs.length > 0 ? (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    {publicDocs.map(doc => (
-                                        <DocumentCard
-                                            key={doc._id}
-                                            doc={{ ...doc, readOnly: !isOwnProfile }}
-                                            onDelete={isOwnProfile ? (id) => console.log("Delete", id) : undefined}
-                                            onUpdate={isOwnProfile ? (d) => console.log("Update", d) : undefined}
-                                        />
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="text-slate-500 dark:text-slate-400 text-sm italic">
-                                    No public documents to show.
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {/* Private Documents Section (Only for Owner) */}
-                    {isOwnProfile && (
-                        <div className="card-glass p-6 border-l-4 border-slate-500">
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                    <FaLock className="text-slate-500" /> Private Documents
-                                </h3>
-                            </div>
-
-                            {docsLoading ? (
-                                <div className="text-slate-500 animate-pulse">Loading documents...</div>
-                            ) : privateDocs.length > 0 ? (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    {privateDocs.map(doc => (
-                                        <DocumentCard
-                                            key={doc._id}
-                                            doc={{ ...doc, readOnly: false }}
-                                            onDelete={(id) => console.log("Delete", id)}
-                                            onUpdate={(d) => console.log("Update", d)}
-                                        />
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="text-slate-500 dark:text-slate-400 text-sm italic">
-                                    No private documents found.
-                                </div>
-                            )}
-                        </div>
-                    )}
                 </div>
             </div>
             {/* User List Modal */}

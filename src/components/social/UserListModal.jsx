@@ -3,17 +3,20 @@ import { FaTimes, FaUser } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
 import { getFollowers, getFollowing, removeFollower } from '../../api/social';
+import { useConfirm } from '../../context/ConfirmContext';
 
 const UserListModal = ({ isOpen, onClose, userId, type, title }) => {
     const { user: currentUser } = useAuth();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const { showConfirm } = useConfirm();
 
     const isOwnList = currentUser && currentUser._id === userId;
 
     const handleRemove = async (followerId) => {
-        if (!window.confirm("Remove this follower?")) return;
+        const isConfirmed = await showConfirm("Remove this follower?", "Remove User", "danger");
+        if (!isConfirmed) return;
         try {
             await removeFollower(followerId);
             // Remove from local list
@@ -90,7 +93,7 @@ const UserListModal = ({ isOpen, onClose, userId, type, title }) => {
                         <div className="space-y-4">
                             {users.map((user) => (
                                 <div key={user._id} className="flex items-center justify-between group p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                    <Link 
+                                    <Link
                                         to={`/user/${user._id}`}
                                         onClick={onClose}
                                         className="flex items-center space-x-3 flex-1 min-w-0"
@@ -109,11 +112,11 @@ const UserListModal = ({ isOpen, onClose, userId, type, title }) => {
                                             <p className="text-xs text-slate-500 truncate">@{user.username}</p>
                                         </div>
                                     </Link>
-                                    
+
                                     {isOwnList && type === 'followers' && (
                                         <button
                                             onClick={(e) => {
-                                                e.preventDefault(); 
+                                                e.preventDefault();
                                                 handleRemove(user._id);
                                             }}
                                             className="ml-2 px-3 py-1 text-xs font-semibold text-red-500 bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg opacity-0 group-hover:opacity-100 transition-all border border-red-200 dark:border-red-900/30"

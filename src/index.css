@@ -111,3 +111,12 @@ body::-webkit-scrollbar {
 .themed-scrollbar::-webkit-scrollbar-thumb:hover {
     background-color: #7c3aed;
 }
+
+/* Hide scrollbar utility */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}

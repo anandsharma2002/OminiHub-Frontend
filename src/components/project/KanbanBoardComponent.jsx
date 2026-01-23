@@ -20,65 +20,17 @@ import { CSS } from '@dnd-kit/utilities';
 import boardAPI from '../../api/board';
 import projectAPI from '../../api/project';
 import taskAPI from '../../api/task';
-import { FaPlus, FaEllipsisH, FaTrash, FaCalendarAlt, FaUserCircle } from 'react-icons/fa';
+import { FaPlus, FaEllipsisH, FaTrash, FaCalendarAlt, FaUserCircle, FaSortAmountDown } from 'react-icons/fa';
 import { useSocket } from '../../context/SocketContext';
 import { useToast } from '../../context/ToastContext';
 import { usePrompt } from '../../context/PromptContext';
 import { useConfirm } from '../../context/ConfirmContext';
 
-// --- Sortable Ticket Item ---
-const SortableTicket = ({ ticket, onDelete, onUpdate, members }) => {
-    const {
-        attributes,
-        listeners,
-        setNodeRef,
-        transform,
-        transition,
-    } = useSortable({ id: ticket._id, data: { ...ticket, type: 'Ticket' } });
+import { usePrompt } from '../../context/PromptContext';
+import { useConfirm } from '../../context/ConfirmContext';
 
-    const [showMenu, setShowMenu] = useState(false);
-    const menuRef = useRef(null);
-
-    // Close menu when clicking outside
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (menuRef.current && !menuRef.current.contains(event.target)) {
-                setShowMenu(false);
-            }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
-
-    const style = {
-        transform: CSS.Transform.toString(transform),
-        transition,
-    };
-
-    if (!ticket || !ticket.task) return null;
-
-    const handleMenuClick = (e) => {
-        e.stopPropagation();
-        setShowMenu(!showMenu);
-    };
-
-    const handlePriorityChange = (level) => {
-        const priorities = ['Low', 'Medium', 'High', 'Critical'];
-        // level 1-4 maps to index 0-3
-        onUpdate(ticket.task._id, { priority: priorities[level - 1] });
-        setShowMenu(false);
-    };
-
-    const handleAssign = (userId) => {
-        onUpdate(ticket.task._id, { assignedTo: userId });
-        setShowMenu(false);
-    };
-
-    const handleDelete = () => {
-        onDelete(ticket._id);
-        setShowMenu(false);
-    };
-
+// --- Pure Presentation Ticket Component ---
+const TicketCard = ({ ticket, members, style, className, showMenuButton = true, onMenuClick, showMenu, menuContent, onDelete, onUpdate, buttonRef }) => {
     // Helper for Priority Number
     const getPriorityNumber = (p) => {
         switch (p) {
@@ -90,13 +42,22 @@ const SortableTicket = ({ ticket, onDelete, onUpdate, members }) => {
         }
     };
 
+    const getPriorityColor = (p) => {
+        switch (p) {
+            case 'Low': return 'bg-slate-200 text-slate-700'; // Grey
+            case 'Medium': return 'bg-blue-100 text-blue-700'; // Blue
+            case 'High': return 'bg-orange-100 text-orange-700'; // Orange
+            case 'Critical': return 'bg-red-100 text-red-700'; // Red
+            default: return 'bg-slate-100 text-slate-500';
+        }
+    };
+
+    const pNum = getPriorityNumber(ticket.priority);
+
     return (
         <div
-            ref={setNodeRef}
             style={style}
-            {...attributes}
-            {...listeners}
-            className="relative bg-white dark:bg-slate-800 p-3 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 mb-3 cursor-grab hover:shadow-md transition-shadow group"
+            className={`relative bg-white dark:bg-slate-800 p-3 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 mb-3 cursor-grab hover:shadow-md transition-shadow group ${className || ''}`}
         >
             <div className="flex justify-between items-start mb-2">
                 <div className="flex flex-col">
@@ -106,62 +67,34 @@ const SortableTicket = ({ ticket, onDelete, onUpdate, members }) => {
                 </div>
 
                 {/* 3 Dots Menu */}
-                <div className="relative" ref={menuRef}>
-                    <button
-                        onClick={handleMenuClick}
-                        className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400"
-                    >
-                        <FaEllipsisH />
-                    </button>
-
-                    {showMenu && (
-                        <div className="absolute right-0 top-6 w-48 bg-white dark:bg-slate-800 shadow-xl rounded-lg border border-slate-200 dark:border-slate-700 z-50 overflow-hidden flex flex-col text-left">
-                            <div className="p-2 border-b border-slate-100 dark:border-slate-700">
-                                <p className="text-xs font-bold text-slate-500 mb-1 ml-2">Priority</p>
-                                <div className="flex justify-around">
-                                    {[1, 2, 3, 4].map(num => (
-                                        <button
-                                            key={num}
-                                            onClick={(e) => { e.stopPropagation(); handlePriorityChange(num); }}
-                                            className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${getPriorityNumber(ticket.priority) === num
-                                                ? 'bg-violet-600 text-white'
-                                                : 'bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-600 dark:text-slate-300'
-                                                }`}
-                                        >
-                                            {num}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div className="p-2 border-b border-slate-100 dark:border-slate-700 max-h-32 overflow-y-auto">
-                                <p className="text-xs font-bold text-slate-500 mb-1 ml-2">Assign To</p>
-                                {members.length > 0 ? members.map(m => (
-                                    <button
-                                        key={m.user._id}
-                                        onClick={(e) => { e.stopPropagation(); handleAssign(m.user._id); }}
-                                        className="flex items-center w-full px-2 py-1 text-xs hover:bg-slate-50 dark:hover:bg-slate-700 rounded text-slate-700 dark:text-slate-200"
-                                    >
-                                        <div className="w-4 h-4 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-[8px] font-bold mr-2">
-                                            {m.user.username[0].toUpperCase()}
-                                        </div>
-                                        {m.user.username}
-                                    </button>
-                                )) : <p className="text-xs text-slate-400 px-2">No members found</p>}
-                            </div>
-
-                            <button
-                                onClick={(e) => { e.stopPropagation(); handleDelete(); }}
-                                className="text-left w-full px-4 py-2 text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center"
-                            >
-                                <FaTrash className="mr-2" size={10} /> Remove Ticket
-                            </button>
-                        </div>
-                    )}
-                </div>
+                {showMenuButton && (
+                    <div className="relative">
+                        <button
+                            ref={buttonRef}
+                            onPointerDown={(e) => { e.stopPropagation(); onMenuClick && onMenuClick(e); }} // Use onPointerDown to prevent drag start
+                            className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400"
+                        >
+                            <FaEllipsisH />
+                        </button>
+                        {showMenu && menuContent}
+                    </div>
+                )}
             </div>
 
-            <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-3">{ticket.task.title}</h4>
+            <div className="flex justify-between items-start mb-2">
+                <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200 line-clamp-2 leading-tight flex-grow pr-2">{ticket.task.title}</h4>
+                {pNum > 0 && (
+                    <div className={`shrink-0 px-1.5 py-0.5 rounded text-[10px] font-bold ${getPriorityColor(ticket.priority)}`} title={`Priority: ${ticket.priority}`}>
+                        P{pNum}
+                    </div>
+                )}
+            </div>
+
+            <div className="flex justify-between items-center mb-3">
+                <span className="text-[10px] text-slate-400 font-mono">
+                    #{ticket.ticketId || ticket._id.slice(-6)}
+                </span>
+            </div>
 
             <div className="flex justify-between items-center mt-2 pt-2 border-t border-slate-50 dark:border-slate-700/50">
                 {/* Left: Created Date */}
@@ -190,8 +123,136 @@ const SortableTicket = ({ ticket, onDelete, onUpdate, members }) => {
     );
 };
 
+// --- Sortable Ticket Item ---
+const SortableTicket = ({ ticket, onDelete, onUpdate, members }) => {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging
+    } = useSortable({ id: ticket._id, data: { ...ticket, type: 'Ticket' } });
+
+    const [showMenu, setShowMenu] = useState(false);
+    const menuRef = useRef(null);
+    const buttonRef = useRef(null);
+
+    // Close menu when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (
+                menuRef.current && !menuRef.current.contains(event.target) &&
+                buttonRef.current && !buttonRef.current.contains(event.target)
+            ) {
+                setShowMenu(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.3 : 1, // Dim original when dragging
+    };
+
+    if (!ticket || !ticket.task) return null;
+
+    const handleMenuClick = (e) => {
+        // e.stopPropagation() is handled in TicketCard onPointerDown
+        setShowMenu(!showMenu);
+    };
+
+    const handlePriorityChange = (level) => {
+        const priorities = ['Low', 'Medium', 'High', 'Critical'];
+        onUpdate(ticket.task._id, { priority: priorities[level - 1] });
+        setShowMenu(false);
+    };
+
+    const handleAssign = (userId) => {
+        onUpdate(ticket.task._id, { assignedTo: userId });
+        setShowMenu(false);
+    };
+
+    const handleDelete = () => {
+        onDelete(ticket._id);
+        setShowMenu(false);
+    };
+
+    const getPriorityNumber = (p) => {
+        switch (p) {
+            case 'Low': return 1;
+            case 'Medium': return 2;
+            case 'High': return 3;
+            case 'Critical': return 4;
+            default: return 0;
+        }
+    };
+
+    const menuContent = (
+        <div ref={menuRef} className="absolute right-0 top-6 w-48 bg-white dark:bg-slate-800 shadow-xl rounded-lg border border-slate-200 dark:border-slate-700 z-50 overflow-hidden flex flex-col text-left">
+            <div className="p-2 border-b border-slate-100 dark:border-slate-700">
+                <p className="text-xs font-bold text-slate-500 mb-1 ml-2">Priority</p>
+                <div className="flex justify-around">
+                    {[1, 2, 3, 4].map(num => (
+                        <button
+                            key={num}
+                            onClick={(e) => { e.stopPropagation(); handlePriorityChange(num); }}
+                            className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${getPriorityNumber(ticket.priority) === num
+                                ? 'bg-violet-600 text-white'
+                                : 'bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-600 dark:text-slate-300'
+                                }`}
+                        >
+                            {num}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            <div className="p-2 border-b border-slate-100 dark:border-slate-700 max-h-32 overflow-y-auto">
+                <p className="text-xs font-bold text-slate-500 mb-1 ml-2">Assign To</p>
+                {members.length > 0 ? members.map(m => (
+                    <button
+                        key={m.user._id}
+                        onClick={(e) => { e.stopPropagation(); handleAssign(m.user._id); }}
+                        className="flex items-center w-full px-2 py-1 text-xs hover:bg-slate-50 dark:hover:bg-slate-700 rounded text-slate-700 dark:text-slate-200 overflow-hidden"
+                    >
+                        <div className="w-4 h-4 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-[8px] font-bold mr-2 shrink-0">
+                            {m.user.username[0].toUpperCase()}
+                        </div>
+                        <span className="truncate">{m.user.username}</span>
+                    </button>
+                )) : <p className="text-xs text-slate-400 px-2">No members found</p>}
+            </div>
+
+            <button
+                onClick={(e) => { e.stopPropagation(); handleDelete(); }}
+                className="text-left w-full px-4 py-2 text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center"
+            >
+                <FaTrash className="mr-2" size={10} /> Remove Ticket
+            </button>
+        </div>
+    );
+
+    return (
+        <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+            <TicketCard
+                ticket={ticket}
+                members={members}
+                showMenu={showMenu}
+                showMenuButton={true}
+                onMenuClick={handleMenuClick}
+                menuContent={menuContent}
+                buttonRef={buttonRef}
+            />
+        </div>
+    );
+};
+
 // --- Column Component ---
-const Column = ({ column, tickets, onDeleteTicket, onUpdateTicket, members, onDeleteColumn }) => {
+const Column = ({ column, tickets, onDeleteTicket, onUpdateTicket, members, onDeleteColumn, isDragOver, confirm }) => {
     const {
         setNodeRef,
         attributes,
@@ -202,17 +263,48 @@ const Column = ({ column, tickets, onDeleteTicket, onUpdateTicket, members, onDe
     } = useSortable({ id: column._id, data: { ...column, type: 'Column' } });
 
     const [showMenu, setShowMenu] = useState(false);
+    const [showSortMenu, setShowSortMenu] = useState(false);
+    const [sortMode, setSortMode] = useState('manual'); // 'manual', 'priority', 'date'
     const menuRef = useRef(null);
+    const sortMenuRef = useRef(null);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (menuRef.current && !menuRef.current.contains(event.target)) {
                 setShowMenu(false);
             }
+            if (sortMenuRef.current && !sortMenuRef.current.contains(event.target)) {
+                setShowSortMenu(false);
+            }
         };
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
+
+    const getPriorityValue = (p) => {
+        switch (p) {
+            case 'Critical': return 4;
+            case 'High': return 3;
+            case 'Medium': return 2;
+            case 'Low': return 1;
+            default: return 0;
+        }
+    };
+
+    const sortedTickets = React.useMemo(() => {
+        let sorted = [...tickets];
+        if (sortMode === 'priority') {
+            sorted.sort((a, b) => getPriorityValue(b.priority) - getPriorityValue(a.priority));
+        } else if (sortMode === 'date') {
+            sorted.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        }
+        return sorted;
+    }, [tickets, sortMode]);
+
+    const handleSortChange = (mode) => {
+        setSortMode(mode);
+        setShowSortMenu(false);
+    };
 
     const style = {
         transform: CSS.Translate.toString(transform),
@@ -220,17 +312,30 @@ const Column = ({ column, tickets, onDeleteTicket, onUpdateTicket, members, onDe
         opacity: isDragging ? 0.5 : 1,
     };
 
-    const handleDelete = () => {
+    const handleDelete = async () => {
+        let message = "Are you sure you want to delete this column?";
         if (tickets.length > 0) {
-            if (!window.confirm("This column contains tickets. Deleting it will delete all tickets within it. Continue?")) return;
-        } else {
-            if (!window.confirm("Are you sure you want to delete this column?")) return;
+            message = "This column contains tickets. Deleting it will delete all tickets within it. Continue?";
         }
+
+        const isConfirmed = await confirm(message, "Delete Column", "danger");
+        if (!isConfirmed) return;
+
         onDeleteColumn(column._id);
     };
 
     return (
-        <div ref={setNodeRef} style={style} className="flex-shrink-0 w-80 flex flex-col h-full bg-slate-100/80 dark:bg-slate-900/60 rounded-2xl mr-4 border border-white/50 dark:border-slate-800 backdrop-blur-xl shadow-sm transition-all hover:shadow-md hover:border-violet-500/20 group">
+        <div
+            ref={setNodeRef}
+            style={style}
+            className={`
+                flex-shrink-0 w-80 flex flex-col h-full rounded-2xl mr-4 backdrop-blur-xl shadow-sm transition-all group
+                ${isDragOver
+                    ? 'bg-violet-50/90 dark:bg-slate-900/80 border-2 border-violet-500 shadow-violet-500/20 shadow-lg'
+                    : 'bg-slate-100/80 dark:bg-slate-900/60 border border-white/50 dark:border-slate-800 hover:shadow-md hover:border-violet-500/20'
+                }
+            `}
+        >
             {/* Header - Drag Handle */}
             <div
                 {...attributes}
@@ -242,6 +347,38 @@ const Column = ({ column, tickets, onDeleteTicket, onUpdateTicket, members, onDe
                     <span className="ml-3 bg-white dark:bg-slate-800 text-violet-600 dark:text-violet-400 text-xs px-2.5 py-0.5 rounded-full font-extrabold shadow-sm">{tickets.length}</span>
                 </h3>
 
+                {/* Sort Menu */}
+                <div className="relative mr-2" ref={sortMenuRef} onPointerDown={(e) => e.stopPropagation()}>
+                    <button
+                        onClick={() => setShowSortMenu(!showSortMenu)}
+                        className={`transition-colors p-1 rounded-md ${sortMode !== 'manual' ? 'text-violet-600 bg-violet-50 dark:bg-violet-900/20' : 'text-slate-400 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-slate-200 dark:hover:bg-slate-800'}`}
+                        title="Sort Tickets"
+                    >
+                        <FaSortAmountDown />
+                    </button>
+                    {showSortMenu && (
+                        <div className="absolute right-0 top-8 w-40 bg-white dark:bg-slate-800 shadow-xl rounded-lg border border-slate-200 dark:border-slate-700 z-50 overflow-hidden flex flex-col text-left">
+                            <button
+                                onClick={() => handleSortChange('manual')}
+                                className={`text-left w-full px-4 py-2 text-xs hover:bg-slate-50 dark:hover:bg-slate-700 ${sortMode === 'manual' ? 'font-bold text-violet-600' : 'text-slate-600 dark:text-slate-300'}`}
+                            >
+                                Default (Manual)
+                            </button>
+                            <button
+                                onClick={() => handleSortChange('priority')}
+                                className={`text-left w-full px-4 py-2 text-xs hover:bg-slate-50 dark:hover:bg-slate-700 ${sortMode === 'priority' ? 'font-bold text-violet-600' : 'text-slate-600 dark:text-slate-300'}`}
+                            >
+                                Priority (High-Low)
+                            </button>
+                            <button
+                                onClick={() => handleSortChange('date')}
+                                className={`text-left w-full px-4 py-2 text-xs hover:bg-slate-50 dark:hover:bg-slate-700 ${sortMode === 'date' ? 'font-bold text-violet-600' : 'text-slate-600 dark:text-slate-300'}`}
+                            >
+                                Created (Newest)
+                            </button>
+                        </div>
+                    )}
+                </div>
                 {/* Column Menu */}
                 <div className="relative" ref={menuRef} onPointerDown={(e) => e.stopPropagation()}>
                     <button
@@ -263,9 +400,9 @@ const Column = ({ column, tickets, onDeleteTicket, onUpdateTicket, members, onDe
                 </div>
             </div>
 
-            <div className="p-3 flex-grow overflow-y-auto pb-20 themed-scrollbar">
-                <SortableContext items={tickets.map(t => t._id)} strategy={verticalListSortingStrategy}>
-                    {tickets.map(ticket => (
+            <div className="p-3 flex-grow overflow-y-auto pb-20 scrollbar-hide">
+                <SortableContext items={sortedTickets.map(t => t._id)} strategy={verticalListSortingStrategy}>
+                    {sortedTickets.map(ticket => (
                         <SortableTicket
                             key={ticket._id}
                             ticket={ticket}
@@ -292,6 +429,7 @@ const KanbanBoardComponent = ({ projectId }) => {
     const [tickets, setTickets] = useState([]);
     const [members, setMembers] = useState([]);
     const [activeId, setActiveId] = useState(null);
+    const [overColumnId, setOverColumnId] = useState(null); // Track formatted column hover
     const [loading, setLoading] = useState(true);
     const { socket } = useSocket();
     const { success, error: toastError } = useToast();
@@ -336,14 +474,54 @@ const KanbanBoardComponent = ({ projectId }) => {
             }
         };
 
+        const handleTicketCreated = (newTicket) => {
+            if (newTicket.project === projectId) {
+                setTickets(prev => [...prev, newTicket]);
+            }
+        };
+
+        const handleColumnCreated = (newColumn) => {
+            if (newColumn.project === projectId) {
+                setColumns(prev => [...prev, newColumn]);
+            }
+        };
+
+        const handleColumnDeleted = ({ columnId, projectId: pId }) => {
+            if (pId === projectId) {
+                setColumns(prev => prev.filter(c => c._id !== columnId));
+                setTickets(prev => prev.filter(t => t.column !== columnId));
+            }
+        };
+
+        const handleColumnsReordered = ({ projectId: pId, columns: newColumns }) => {
+            if (pId === projectId) {
+                setColumns(newColumns);
+            }
+        };
+
         socket.on('ticket_deleted', handleTicketDeleted);
         socket.on('ticket_updated', handleTicketUpdated);
         socket.on('task_updated', handleTaskUpdated);
+        socket.on('ticket_created', handleTicketCreated);
+        socket.on('column_created', handleColumnCreated);
+        socket.on('column_deleted', handleColumnDeleted);
+        socket.on('columns_reordered', handleColumnsReordered);
+
+        socket.on('board_refetch_needed', ({ projectId: pId }) => {
+            if (pId === projectId) {
+                fetchBoard();
+            }
+        });
 
         return () => {
             socket.off('ticket_deleted', handleTicketDeleted);
             socket.off('ticket_updated', handleTicketUpdated);
             socket.off('task_updated', handleTaskUpdated);
+            socket.off('ticket_created', handleTicketCreated);
+            socket.off('column_created', handleColumnCreated);
+            socket.off('column_deleted', handleColumnDeleted);
+            socket.off('columns_reordered', handleColumnsReordered);
+            socket.off('board_refetch_needed');
         };
 
     }, [socket, projectId]);
@@ -413,13 +591,61 @@ const KanbanBoardComponent = ({ projectId }) => {
         if (!isConfirmed) return;
 
         try {
-            await boardAPI.deleteColumn(columnId);
             setColumns(prev => prev.filter(c => c._id !== columnId));
             setTickets(prev => prev.filter(t => t.column !== columnId));
             success('Column deleted');
         } catch (error) {
             toastError("Failed to delete column");
         }
+    };
+
+    const handleDragOver = (event) => {
+        const { active, over } = event;
+        if (!over) {
+            setOverColumnId(null);
+            return;
+        }
+
+        const activeId = active.id;
+        const overId = over.id;
+
+        // Determine Over Column (for styling)
+        const overTicket = tickets.find(t => t._id === overId);
+        const overColumn = columns.find(c => c._id === overId);
+        let destColumnId = null;
+
+        if (overTicket) {
+            destColumnId = overTicket.column;
+        } else if (overColumn) {
+            destColumnId = overColumn._id;
+        }
+        setOverColumnId(destColumnId);
+
+        // Find dragged ticket
+        const activeTicket = tickets.find(t => t._id === activeId);
+        if (!activeTicket) return; // Only handle tickets in DragOver
+
+        const isActiveColumn = active.data.current?.type === 'Column';
+        if (isActiveColumn) return; // Columns handled in DragEnd
+
+        // Identify Source Column
+        const sourceColumnId = activeTicket.column;
+
+        // If no destination or same column, return (Same column handled by DragEnd for final reorder)
+        if (!destColumnId || sourceColumnId === destColumnId) return;
+
+        // PERFORM OPTIMISTIC UPDATE
+        setTickets(prev => {
+            const activeIndex = prev.findIndex(t => t._id === activeId);
+            const updated = [...prev];
+
+            // Update column
+            if (activeIndex !== -1) {
+                updated[activeIndex] = { ...updated[activeIndex], column: destColumnId };
+            }
+
+            return updated;
+        });
     };
 
     const handleDragStart = (event) => {
@@ -429,6 +655,7 @@ const KanbanBoardComponent = ({ projectId }) => {
     const handleDragEnd = async (event) => {
         const { active, over } = event;
         setActiveId(null);
+        setOverColumnId(null);
 
         if (!over) return;
 
@@ -439,29 +666,15 @@ const KanbanBoardComponent = ({ projectId }) => {
         const isActiveColumn = active.data.current?.type === 'Column';
         if (isActiveColumn) {
             if (activeId !== overId) {
-                setColumns((columns) => {
-                    const oldIndex = columns.findIndex((c) => c._id === activeId);
-                    const newIndex = columns.findIndex((c) => c._id === overId);
-                    return arrayMove(columns, oldIndex, newIndex);
-                });
+                const oldIndex = columns.findIndex((c) => c._id === activeId);
+                const newIndex = columns.findIndex((c) => c._id === overId);
 
-                // Calculate new index to send to backend
-                const oldIndex = columns.findIndex(c => c._id === activeId);
-                const newIndex = columns.findIndex(c => c._id === overId); // Note: this uses closure 'columns' which might be stale in setter? No, use the computed values.
-                // Wait, I should calculate indices BEFORE setter or use the setter to derive logic but I need to call API.
-                // Re-calculating indices from current state 'columns' is fine for the API call payload since it represents the state BEFORE the move effectively if I use it here, 
-                // BUT I need the TARGET index. 
-                // Actually arrayMove(columns, oldIndex, newIndex) returns the new array.
-                // The backend API expects just the new position index (integer).
+                setColumns((columns) => arrayMove(columns, oldIndex, newIndex));
 
                 try {
-                    // Correct way:
-                    const oldIdx = columns.findIndex(c => c._id === activeId);
-                    const newIdx = columns.findIndex(c => c._id === overId);
-
                     await boardAPI.moveColumn({
                         columnId: activeId,
-                        newOrder: newIdx
+                        newOrder: newIndex
                     });
                 } catch (error) {
                     console.error("Move column failed", error);
@@ -471,36 +684,47 @@ const KanbanBoardComponent = ({ projectId }) => {
             return;
         }
 
+        // Handle Ticket Dragging (Final Persistence)
         const activeTicket = tickets.find(t => t._id === activeId);
+        if (!activeTicket) return;
 
-        if (activeTicket) {
-            let newColumnId = null;
-            const overColumn = columns.find(c => c._id === overId);
-            if (overColumn) {
-                newColumnId = overColumn._id;
-            } else {
-                const overTicket = tickets.find(t => t._id === overId);
-                if (overTicket) {
-                    newColumnId = overTicket.column;
-                }
-            }
+        // activeTicket.column is already updated by DragOver 
+        const currentColumnId = activeTicket.column;
 
-            if (newColumnId && newColumnId !== activeTicket.column) {
-                setTickets(tickets => tickets.map(t =>
-                    t._id === activeId ? { ...t, column: newColumnId } : t
-                ));
+        // Find order
+        const ticketsInColumn = tickets.filter(t => t.column === currentColumnId);
+        const oldIndex = ticketsInColumn.findIndex(t => t._id === activeId);
 
-                try {
-                    await boardAPI.moveTicket({
-                        ticketId: activeId,
-                        newColumnId: newColumnId,
-                        newOrder: 0
-                    });
-                } catch (error) {
-                    console.error("Move failed", error);
-                    fetchBoard();
-                }
-            }
+        let newIndex = ticketsInColumn.length - 1;
+
+        const overTicket = tickets.find(t => t._id === overId);
+        // If we dropped on a ticket in the same column (which it should be now)
+        if (overTicket && overTicket.column === currentColumnId) {
+            newIndex = ticketsInColumn.findIndex(t => t._id === overId);
+        } else if (overTicket) {
+            // Fallback if mismatch
+            newIndex = ticketsInColumn.findIndex(t => t._id === overTicket._id);
+            if (newIndex === -1) newIndex = ticketsInColumn.length - 1;
+        }
+
+        // Reorder visually if needed (although DragOver might have done it or standard sortable did)
+        if (oldIndex !== newIndex) {
+            const newOrderedSub = arrayMove(ticketsInColumn, oldIndex, newIndex);
+            setTickets(prev => {
+                const others = prev.filter(t => t.column !== currentColumnId);
+                return [...others, ...newOrderedSub];
+            });
+        }
+
+        try {
+            await boardAPI.moveTicket({
+                ticketId: activeId,
+                newColumnId: currentColumnId,
+                newOrder: newIndex
+            });
+        } catch (error) {
+            console.error("Move ticket failed", error);
+            fetchBoard();
         }
     };
 
@@ -509,7 +733,7 @@ const KanbanBoardComponent = ({ projectId }) => {
         if (name) {
             try {
                 await boardAPI.createColumn({ projectId, name });
-                // Socket update expected
+                fetchBoard();
                 success('Column created');
             } catch (error) {
                 toastError("Failed to create column");
@@ -520,6 +744,7 @@ const KanbanBoardComponent = ({ projectId }) => {
     if (loading) return <div>Loading board...</div>;
 
     const activeColumn = activeId ? columns.find(c => c._id === activeId) : null;
+    const activeTicket = activeId ? tickets.find(t => t._id === activeId) : null;
 
     return (
         <div className="h-[calc(100vh-180px)] overflow-x-auto overflow-y-hidden pb-4 themed-scrollbar">
@@ -528,6 +753,7 @@ const KanbanBoardComponent = ({ projectId }) => {
                     sensors={sensors}
                     collisionDetection={closestCenter}
                     onDragStart={handleDragStart}
+                    onDragOver={handleDragOver}
                     onDragEnd={handleDragEnd}
                 >
                     <SortableContext items={columns.map(c => c._id)} strategy={horizontalListSortingStrategy}>
@@ -540,6 +766,8 @@ const KanbanBoardComponent = ({ projectId }) => {
                                 onUpdateTicket={handleUpdateTicket}
                                 members={members}
                                 onDeleteColumn={handleDeleteColumn}
+                                isDragOver={overColumnId === col._id}
+                                confirm={showConfirm}
                             />
                         ))}
                     </SortableContext>
@@ -562,11 +790,16 @@ const KanbanBoardComponent = ({ projectId }) => {
                                     </h3>
                                     <div className="h-full bg-slate-50/50 dark:bg-slate-900/50 rounded-xl"></div>
                                 </div>
-                            ) : (
-                                <div className="bg-white dark:bg-slate-800 p-3 rounded-lg shadow-xl border-2 border-violet-500 cursor-grabbing opacity-90 rotate-3 text-sm font-bold">
-                                    Dragging ticket...
+                            ) : activeTicket ? (
+                                <div className="cursor-grabbing w-[300px]">
+                                    <TicketCard
+                                        ticket={activeTicket}
+                                        members={members}
+                                        showMenuButton={false}
+                                        className="shadow-2xl border-violet-500/50 ring-2 ring-violet-500/20"
+                                    />
                                 </div>
-                            )
+                            ) : null
                         ) : null}
                     </DragOverlay>
                 </DndContext>

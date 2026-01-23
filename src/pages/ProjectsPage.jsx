@@ -1,18 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import projectAPI from '../api/project';
-import { FaPlus, FaFolder, FaCodeBranch, FaUsers, FaArrowRight } from 'react-icons/fa';
+import { FaPlus, FaFolder, FaCodeBranch, FaUsers, FaArrowRight, FaSearch, FaTimes } from 'react-icons/fa';
+import { useToast } from '../context/ToastContext';
 
 const ProjectsPage = () => {
     const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const navigate = useNavigate();
+    const { success, error: toastError } = useToast();
 
     const location = useLocation();
 
     // New project form state
     const [newProject, setNewProject] = useState({ name: '', description: '', githubRepo: '' });
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const filteredProjects = projects.filter(project =>
+        project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (project.description && project.description.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
 
     useEffect(() => {
         fetchProjects();
@@ -49,8 +57,9 @@ const ProjectsPage = () => {
             setShowCreateModal(false);
             setNewProject({ name: '', description: '', githubRepo: '' });
             fetchProjects();
+            success('Project created successfully');
         } catch (error) {
-            alert('Failed to create project: ' + (error.response?.data?.message || 'Unknown error'));
+            toastError('Failed to create project: ' + (error.response?.data?.message || 'Unknown error'));
         }
     };
 
@@ -61,12 +70,51 @@ const ProjectsPage = () => {
                     <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Projects</h1>
                     <p className="text-slate-500 dark:text-slate-400">Manage your work and collaborate.</p>
                 </div>
-                <button
-                    onClick={() => setShowCreateModal(true)}
-                    className="btn-primary flex items-center space-x-2"
-                >
-                    <FaPlus /> <span>New Project</span>
-                </button>
+                <div className="flex items-center space-x-4">
+                    <div className="relative hidden md:block">
+                        <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
+                        <input
+                            type="text"
+                            placeholder="Search projects..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="pl-10 pr-10 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/50 w-64 transition-all"
+                        />
+                        {searchQuery && (
+                            <button
+                                onClick={() => setSearchQuery('')}
+                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                            >
+                                <FaTimes />
+                            </button>
+                        )}
+                    </div>
+                    <button
+                        onClick={() => setShowCreateModal(true)}
+                        className="btn-primary flex items-center space-x-2"
+                    >
+                        <FaPlus /> <span>New Project</span>
+                    </button>
+                </div>
+            </div>
+            {/* Mobile Search - Visible only on small screens */}
+            <div className="md:hidden mb-6 relative">
+                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
+                <input
+                    type="text"
+                    placeholder="Search projects..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 pr-10 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/50 w-full"
+                />
+                {searchQuery && (
+                    <button
+                        onClick={() => setSearchQuery('')}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                    >
+                        <FaTimes />
+                    </button>
+                )}
             </div>
 
             {loading ? (
@@ -77,7 +125,7 @@ const ProjectsPage = () => {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {projects.map(project => (
+                    {filteredProjects.map(project => (
                         <Link
                             to={`/projects/${project._id}`}
                             key={project._id}
@@ -114,7 +162,7 @@ const ProjectsPage = () => {
                         </Link>
                     ))}
 
-                    {projects.length === 0 && (
+                    {projects.length === 0 && !loading && (
                         <div className="col-span-full py-12 text-center text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">
                             <FaFolder className="mx-auto text-4xl mb-4 opacity-50" />
                             <p className="text-lg font-medium">No projects yet</p>
@@ -127,67 +175,77 @@ const ProjectsPage = () => {
                             </button>
                         </div>
                     )}
+
+                    {projects.length > 0 && filteredProjects.length === 0 && (
+                        <div className="col-span-full py-12 text-center text-slate-500 dark:text-slate-400">
+                            <FaSearch className="mx-auto text-3xl mb-3 opacity-30" />
+                            <p>No projects match your search.</p>
+                        </div>
+                    )}
                 </div>
-            )}
+            )
+            }
 
             {/* Create Project Modal */}
-            {showCreateModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
-                    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-200 dark:border-slate-800">
-                        <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
-                            <h2 className="text-xl font-bold text-slate-900 dark:text-white">Create New Project</h2>
-                            <button onClick={() => setShowCreateModal(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-                                ✕
-                            </button>
+            {
+                showCreateModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+                        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-200 dark:border-slate-800">
+                            <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                                <h2 className="text-xl font-bold text-slate-900 dark:text-white">Create New Project</h2>
+                                <button onClick={() => setShowCreateModal(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                                    ✕
+                                </button>
+                            </div>
+                            <form onSubmit={handleCreateProject} className="p-6 space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Project Name</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        className="input-field"
+                                        placeholder="e.g. Website Redesign"
+                                        value={newProject.name}
+                                        onChange={e => setNewProject({ ...newProject, name: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Description</label>
+                                    <textarea
+                                        className="input-field min-h-[100px]"
+                                        placeholder="Project goals and details..."
+                                        value={newProject.description}
+                                        onChange={e => setNewProject({ ...newProject, description: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">GitHub Repo (Optional)</label>
+                                    <input
+                                        type="text"
+                                        className="input-field"
+                                        placeholder="owner/repo"
+                                        value={newProject.githubRepo}
+                                        onChange={e => setNewProject({ ...newProject, githubRepo: e.target.value })}
+                                    />
+                                </div>
+                                <div className="pt-4 flex justify-end space-x-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowCreateModal(false)}
+                                        className="px-4 py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button type="submit" className="btn-primary">
+                                        Create Project
+                                    </button>
+                                </div>
+                            </form>
                         </div>
-                        <form onSubmit={handleCreateProject} className="p-6 space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Project Name</label>
-                                <input
-                                    type="text"
-                                    required
-                                    className="input-field"
-                                    placeholder="e.g. Website Redesign"
-                                    value={newProject.name}
-                                    onChange={e => setNewProject({ ...newProject, name: e.target.value })}
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Description</label>
-                                <textarea
-                                    className="input-field min-h-[100px]"
-                                    placeholder="Project goals and details..."
-                                    value={newProject.description}
-                                    onChange={e => setNewProject({ ...newProject, description: e.target.value })}
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">GitHub Repo (Optional)</label>
-                                <input
-                                    type="text"
-                                    className="input-field"
-                                    placeholder="owner/repo"
-                                    value={newProject.githubRepo}
-                                    onChange={e => setNewProject({ ...newProject, githubRepo: e.target.value })}
-                                />
-                            </div>
-                            <div className="pt-4 flex justify-end space-x-3">
-                                <button
-                                    type="button"
-                                    onClick={() => setShowCreateModal(false)}
-                                    className="px-4 py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                                >
-                                    Cancel
-                                </button>
-                                <button type="submit" className="btn-primary">
-                                    Create Project
-                                </button>
-                            </div>
-                        </form>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 };
 
