@@ -309,8 +309,7 @@ const TaskListComponent = ({ projectId }) => {
             toastError("Failed to update task");
         }
     };
-        }
-    };
+
 
     const convertToTicket = async (taskId) => {
         try {
