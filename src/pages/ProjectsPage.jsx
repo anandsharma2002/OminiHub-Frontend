@@ -46,17 +46,42 @@ const ProjectsPage = () => {
         if (!socket) return;
 
         const handleProjectCreated = (newProject) => {
-            // Option 1: Optimistically update state (faster)
-            setProjects(prev => [newProject, ...prev]);
-
-            // Option 2: Refetch to be safe (ensure consistency)
-            // fetchProjects(); 
+            console.log("SOCKET EVENT: project_created received", newProject);
+            setProjects(prev => {
+                const updated = [newProject, ...prev];
+                console.log("State updated (create)", updated);
+                return updated;
+            });
         };
 
+        const handleProjectDeleted = ({ projectId }) => {
+            console.log("SOCKET EVENT: project_deleted received", projectId);
+            setProjects(prev => {
+                const updated = prev.filter(p => p._id !== projectId);
+                console.log("State updated (delete)", updated);
+                return updated;
+            });
+        };
+
+        const handleProjectUpdated = (updatedProject) => {
+            console.log("SOCKET EVENT: project_updated received", updatedProject);
+            setProjects(prev => {
+                const updated = prev.map(p => p._id === updatedProject._id ? updatedProject : p);
+                console.log("State updated (update)", updated);
+                return updated;
+            });
+        };
+
+        console.log("Setting up socket listeners for projects");
         socket.on('project_created', handleProjectCreated);
+        socket.on('project_deleted', handleProjectDeleted);
+        socket.on('project_updated', handleProjectUpdated);
 
         return () => {
+            console.log("Cleaning up socket listeners");
             socket.off('project_created', handleProjectCreated);
+            socket.off('project_deleted', handleProjectDeleted);
+            socket.off('project_updated', handleProjectUpdated);
         };
     }, [socket]);
 
