@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import projectAPI from '../api/project';
 import { FaPlus, FaFolder, FaCodeBranch, FaUsers, FaArrowRight, FaSearch, FaTimes } from 'react-icons/fa';
 import { useToast } from '../context/ToastContext';
+import { useSocket } from '../context/SocketContext';
 
 const ProjectsPage = () => {
     const [projects, setProjects] = useState([]);
@@ -10,6 +11,7 @@ const ProjectsPage = () => {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const navigate = useNavigate();
     const { success, error: toastError } = useToast();
+    const { socket } = useSocket();
 
     const location = useLocation();
 
@@ -38,6 +40,50 @@ const ProjectsPage = () => {
             navigate(location.pathname, { replace: true, state: {} });
         }
     }, [location.state]);
+
+    // WebSocket Listener for Real-time Updates
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleProjectCreated = (newProject) => {
+            console.log("SOCKET EVENT: project_created received", newProject);
+            setProjects(prev => {
+                const updated = [newProject, ...prev];
+                console.log("State updated (create)", updated);
+                return updated;
+            });
+        };
+
+        const handleProjectDeleted = ({ projectId }) => {
+            console.log("SOCKET EVENT: project_deleted received", projectId);
+            setProjects(prev => {
+                const updated = prev.filter(p => p._id !== projectId);
+                console.log("State updated (delete)", updated);
+                return updated;
+            });
+        };
+
+        const handleProjectUpdated = (updatedProject) => {
+            console.log("SOCKET EVENT: project_updated received", updatedProject);
+            setProjects(prev => {
+                const updated = prev.map(p => p._id === updatedProject._id ? updatedProject : p);
+                console.log("State updated (update)", updated);
+                return updated;
+            });
+        };
+
+        console.log("Setting up socket listeners for projects");
+        socket.on('project_created', handleProjectCreated);
+        socket.on('project_deleted', handleProjectDeleted);
+        socket.on('project_updated', handleProjectUpdated);
+
+        return () => {
+            console.log("Cleaning up socket listeners");
+            socket.off('project_created', handleProjectCreated);
+            socket.off('project_deleted', handleProjectDeleted);
+            socket.off('project_updated', handleProjectUpdated);
+        };
+    }, [socket]);
 
     const fetchProjects = async () => {
         try {

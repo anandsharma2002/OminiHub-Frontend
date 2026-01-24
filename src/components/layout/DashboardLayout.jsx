@@ -2,9 +2,12 @@ import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import { FaBars } from 'react-icons/fa';
+import AIChatButton from '../ai/AIChatButton';
+import AIChatWindow from '../ai/AIChatWindow';
 
 const DashboardLayout = () => {
     const [isSidebarOpen, setSidebarOpen] = useState(false);
+    const [isAIChatOpen, setAIChatOpen] = useState(false);
 
     return (
         <div className="flex min-h-[calc(100vh-var(--nav-height))] bg-slate-50 dark:bg-[#020617]">
@@ -25,6 +28,10 @@ const DashboardLayout = () => {
                 </div>
 
                 <Outlet context={{ isSidebarOpen, setSidebarOpen }} />
+
+                {/* AI Chat Integration */}
+                <AIChatButton onClick={() => setAIChatOpen(prev => !prev)} />
+                <AIChatWindow isOpen={isAIChatOpen} onClose={() => setAIChatOpen(false)} />
             </main>
         </div>
     );
