@@ -598,6 +598,7 @@ const KanbanBoardComponent = ({ projectId }) => {
         if (!isConfirmed) return;
 
         try {
+            await boardAPI.deleteColumn(columnId);
             setColumns(prev => prev.filter(c => c._id !== columnId));
             setTickets(prev => prev.filter(t => t.column !== columnId));
             success('Column deleted');

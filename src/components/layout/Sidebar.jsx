@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { FaHome, FaProjectDiagram, FaTasks, FaBook, FaCog, FaSignOutAlt, FaChevronLeft, FaChevronRight, FaTimes, FaGithub, FaBell, FaComments } from 'react-icons/fa';
+import { FaHome, FaProjectDiagram, FaTasks, FaBook, FaCog, FaSignOutAlt, FaChevronLeft, FaChevronRight, FaTimes, FaGithub, FaBell, FaComments, FaChartPie } from 'react-icons/fa';
 import useAuth from '../../hooks/useAuth';
 import useNotifications from '../../hooks/useNotifications';
 
@@ -17,6 +17,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     const menuItems = [
         { path: '/dashboard', label: 'Dashboard', icon: <FaHome /> },
         { path: '/projects', label: 'Projects', icon: <FaProjectDiagram /> },
+        { path: '/progress', label: 'Progress', icon: <FaChartPie /> },
 
         {
             path: '/notifications',

@@ -3,6 +3,8 @@ import axios from '../api/axios';
 const projectAPI = {
     // Projects
     getProjects: () => axios.get('/projects'),
+    getProjectsProgress: () => axios.get('/projects/progress'),
+    getProjectProgress: (id) => axios.get(`/projects/${id}/progress`),
     getProject: (id) => axios.get(`/projects/${id}`),
     createProject: (data) => axios.post('/projects', data),
     updateProject: (id, data) => axios.put(`/projects/${id}`, data),
