@@ -73,8 +73,12 @@ const AIChatWindow = ({ isOpen, onClose }) => {
 
         } catch (error) {
             console.error("Chat Error:", error);
-            setMessages(prev => [...prev, { role: 'model', text: "Sorry, I encountered an error executing your request." }]);
-            toast.error("Failed to connect to AI");
+
+            // Extract the friendly message from backend if available
+            const errorMessage = error.response?.data?.message || "Sorry, I encountered an error executing your request.";
+
+            setMessages(prev => [...prev, { role: 'model', text: errorMessage }]);
+            toast.error(errorMessage);
         } finally {
             setIsLoading(false);
         }
