@@ -29,7 +29,7 @@ import { useConfirm } from '../../context/ConfirmContext';
 
 
 // --- Pure Presentation Ticket Component ---
-const TicketCard = ({ ticket, members, style, className, showMenuButton = true, onMenuClick, showMenu, menuContent, onDelete, onUpdate, buttonRef }) => {
+const TicketCard = ({ ticket, members, style, className, showMenuButton = true, onMenuClick, showMenu, menuContent, onDelete, onUpdate, buttonRef, isClosed }) => {
     // Helper for Priority Number
     const getPriorityNumber = (p) => {
         switch (p) {
@@ -118,12 +118,18 @@ const TicketCard = ({ ticket, members, style, className, showMenuButton = true, 
                     )}
                 </div>
             </div>
+            {/* Closed Status Indicator */}
+            {isClosed && (
+                <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 text-[10px] font-bold px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-600 opacity-80">
+                    Closed
+                </div>
+            )}
         </div>
     );
 };
 
 // --- Sortable Ticket Item ---
-const SortableTicket = ({ ticket, onDelete, onUpdate, members }) => {
+const SortableTicket = ({ ticket, onDelete, onUpdate, members, isClosed }) => {
     const {
         attributes,
         listeners,
@@ -240,6 +246,7 @@ const SortableTicket = ({ ticket, onDelete, onUpdate, members }) => {
             <TicketCard
                 ticket={ticket}
                 members={members}
+                isClosed={isClosed}
                 showMenu={showMenu}
                 showMenuButton={true}
                 onMenuClick={handleMenuClick}
@@ -407,6 +414,7 @@ const Column = ({ column, tickets, onDeleteTicket, onUpdateTicket, members, onDe
                             ticket={ticket}
                             onDelete={onDeleteTicket}
                             onUpdate={onUpdateTicket}
+                            isClosed={column.name.toLowerCase().includes('closed')}
                             members={members}
                         />
                     ))}
