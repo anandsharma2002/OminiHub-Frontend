@@ -64,7 +64,7 @@ const TaskItem = ({ task, allTasks, level, onDelete, onUpdate, onConvert, onAddS
                 `}
                 onClick={handleToggle}
             >
-                <div className="flex items-center space-x-3 overflow-hidden">
+                <div className={`flex items-center space-x-3 overflow-hidden ${task.ticket?.column?.name?.toLowerCase()?.includes('closed') ? 'opacity-50' : ''}`}>
                     {/* Actions Left (Delete) */}
                     <button
                         onClick={() => onDelete(task._id)}
@@ -105,6 +105,11 @@ const TaskItem = ({ task, allTasks, level, onDelete, onUpdate, onConvert, onAddS
                     {task.isTicket && !isEditing && (
                         <span className="text-xs bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-full flex items-center shrink-0">
                             <FaTicketAlt className="mr-1" size={10} /> Ticket
+                        </span>
+                    )}
+                    {task.ticket?.column?.name?.toLowerCase()?.includes('closed') && !isEditing && (
+                        <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700 font-bold uppercase tracking-wider">
+                            Closed
                         </span>
                     )}
                 </div>
