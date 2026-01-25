@@ -28,6 +28,8 @@ import Features from './pages/Features';
 import Pricing from './pages/Pricing';
 import ProjectsPage from './pages/ProjectsPage';
 import ProjectDetails from './pages/ProjectDetails';
+import ProgressDashboard from './pages/ProgressDashboard';
+import ProjectProgressDetails from './pages/ProjectProgressDetails';
 
 import DashboardLayout from './components/layout/DashboardLayout';
 import { ThemeProvider } from './context/ThemeContext';
@@ -62,6 +64,8 @@ function App() {
                                                         <Route path="/dashboard" element={<Dashboard />} />
                                                         <Route path="/projects" element={<ProjectsPage />} />
                                                         <Route path="/projects/:id" element={<ProjectDetails />} />
+                                                        <Route path="/progress" element={<ProgressDashboard />} />
+                                                        <Route path="/projects/:id/progress" element={<ProjectProgressDetails />} />
                                                         <Route path="/docs" element={<Documents />} />
                                                         <Route path="/settings" element={<Settings />} />
                                                         <Route path="/profile" element={<Profile />} />
