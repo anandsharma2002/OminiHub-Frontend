@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
+import useNotifications from '../../hooks/useNotifications';
 import userAPI from '../../api/user';
-import { FaBars, FaTimes, FaRocket, FaSearch } from 'react-icons/fa';
+import { FaBars, FaTimes, FaRocket, FaSearch, FaBell } from 'react-icons/fa';
 import ThemeToggle from '../common/ThemeToggle';
 
 const Navbar = () => {
     const { user } = useAuth();
+    const { unreadCount } = useNotifications();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const location = useLocation();
 
@@ -84,10 +86,8 @@ const Navbar = () => {
                     {/* Desktop Navigation */}
                     <div className="hidden md:flex items-center space-x-8">
                         <NavLink to="/">Home</NavLink>
-                        <NavLink to="/projects">Projects</NavLink>
                         <NavLink to="/features">Features</NavLink>
                         <NavLink to="/pricing">Pricing</NavLink>
-                        <NavLink to="/dosc">Docs</NavLink>
                     </div>
 
                     {/* Search Bar (Desktop) */}
@@ -128,8 +128,12 @@ const Navbar = () => {
                                                         className="flex items-center space-x-3 p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                                                         onClick={clearSearch}
                                                     >
-                                                        <div className="w-8 h-8 rounded-full bg-violet-100 dark:bg-slate-800 flex items-center justify-center text-violet-600 font-bold text-sm">
-                                                            {result.username?.[0]?.toUpperCase()}
+                                                        <div className="w-8 h-8 rounded-full bg-violet-100 dark:bg-slate-800 flex items-center justify-center text-violet-600 font-bold text-sm overflow-hidden">
+                                                            {result.profile?.image && result.profile.image !== 'default.jpg' ? (
+                                                                <img src={result.profile.image} alt={result.username} className="w-full h-full object-cover" />
+                                                            ) : (
+                                                                result.username?.[0]?.toUpperCase()
+                                                            )}
                                                         </div>
                                                         <div>
                                                             <p className="text-sm font-medium text-slate-900 dark:text-white">{result.firstName} {result.lastName}</p>
@@ -158,11 +162,23 @@ const Navbar = () => {
                                         Dashboard
                                     </Link>
                                 )}
-                                {/* Settings Link (Icon) or Avatar acting as menu trigger could go here, 
-                                    but requirements just said remove logout and theme toggle. 
-                                    Logout is gone. Theme toggle is gone. */}
-                                <Link to="/profile" className="w-8 h-8 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-violet-600 dark:text-violet-400 font-bold hover:bg-violet-200 dark:hover:bg-violet-900/50 transition-colors">
-                                    {user.username?.[0]?.toUpperCase()}
+
+                                {/* Notification Icon */}
+                                <Link to="/notifications" className="relative text-slate-600 dark:text-slate-300 hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
+                                    <FaBell size={20} />
+                                    {unreadCount > 0 && (
+                                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full border border-white dark:border-[#020617]">
+                                            {unreadCount > 9 ? '9+' : unreadCount}
+                                        </span>
+                                    )}
+                                </Link>
+
+                                <Link to="/profile" className="w-8 h-8 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-violet-600 dark:text-violet-400 font-bold hover:bg-violet-200 dark:hover:bg-violet-900/50 transition-colors overflow-hidden">
+                                    {user.profile?.image && user.profile.image !== 'default.jpg' ? (
+                                        <img src={user.profile.image} alt={user.username} className="w-full h-full object-cover" />
+                                    ) : (
+                                        user.username?.[0]?.toUpperCase()
+                                    )}
                                 </Link>
                             </>
                         ) : (
@@ -180,6 +196,15 @@ const Navbar = () => {
 
                     {/* Mobile Menu Button & Search Toggle */}
                     <div className="md:hidden flex items-center space-x-4">
+                        {/* Mobile Notification Icon */}
+                        <Link to="/notifications" className="relative text-slate-600 dark:text-slate-300 hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
+                            <FaBell size={20} />
+                            {unreadCount > 0 && (
+                                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full border border-white dark:border-[#020617]">
+                                    {unreadCount > 9 ? '9+' : unreadCount}
+                                </span>
+                            )}
+                        </Link>
                         {user && (
                             <button
                                 onClick={() => setIsMenuOpen(true)} // Can repurpose menu for now or add separate search modal
@@ -242,8 +267,12 @@ const Navbar = () => {
                                                                 className="flex items-center space-x-3 p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                                                                 onClick={() => { clearSearch(); setIsMenuOpen(false); }}
                                                             >
-                                                                <div className="w-8 h-8 rounded-full bg-violet-100 dark:bg-slate-800 flex items-center justify-center text-violet-600 font-bold text-sm">
-                                                                    {result.username?.[0]?.toUpperCase()}
+                                                                <div className="w-8 h-8 rounded-full bg-violet-100 dark:bg-slate-800 flex items-center justify-center text-violet-600 font-bold text-sm overflow-hidden">
+                                                                    {result.profile?.image && result.profile.image !== 'default.jpg' ? (
+                                                                        <img src={result.profile.image} alt={result.username} className="w-full h-full object-cover" />
+                                                                    ) : (
+                                                                        result.username?.[0]?.toUpperCase()
+                                                                    )}
                                                                 </div>
                                                                 <div>
                                                                     <p className="text-sm font-medium text-slate-900 dark:text-white">{result.firstName} {result.lastName}</p>

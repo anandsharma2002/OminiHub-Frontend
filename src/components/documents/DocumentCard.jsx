@@ -9,7 +9,7 @@ const getFileIcon = (mimeType) => {
     return <FaFileAlt className="text-slate-500 text-3xl" />;
 };
 
-const DocumentCard = ({ doc, onDelete, onUpdate }) => {
+const DocumentCard = ({ doc, onDelete, onUpdate, allowDownload = true }) => {
     const [downloading, setDownloading] = useState(false);
     const { error: toastError } = useToast();
 
@@ -74,20 +74,22 @@ const DocumentCard = ({ doc, onDelete, onUpdate }) => {
                     )}
                 </div>
 
-                <button
-                    onClick={handleDownload}
-                    disabled={downloading}
-                    className="flex items-center space-x-2 px-3 py-1.5 bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 rounded-lg text-sm font-medium hover:bg-violet-200 dark:hover:bg-violet-900/50 transition-colors disabled:opacity-50"
-                >
-                    {downloading ? (
-                        <span>Loading...</span>
-                    ) : (
-                        <>
-                            <FaDownload size={14} />
-                            <span>Download</span>
-                        </>
-                    )}
-                </button>
+                {allowDownload && (
+                    <button
+                        onClick={handleDownload}
+                        disabled={downloading}
+                        className="flex items-center space-x-2 px-3 py-1.5 bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 rounded-lg text-sm font-medium hover:bg-violet-200 dark:hover:bg-violet-900/50 transition-colors disabled:opacity-50"
+                    >
+                        {downloading ? (
+                            <span>Loading...</span>
+                        ) : (
+                            <>
+                                <FaDownload size={14} />
+                                <span>Download</span>
+                            </>
+                        )}
+                    </button>
+                )}
             </div>
         </div>
     );

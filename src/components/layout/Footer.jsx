@@ -21,9 +21,8 @@ const Footer = () => {
                             The comprehensive ecosystem intended for modern engineering teams. Plan, build, and ship faster with OmniHub.
                         </p>
                         <div className="flex space-x-4 pt-2">
-                            <SocialIcon icon={<FaGithub />} />
-                            <SocialIcon icon={<FaTwitter />} />
-                            <SocialIcon icon={<FaLinkedin />} />
+                            <SocialIcon icon={<FaGithub />} href="https://github.com/anandsharma2002" />
+                            <SocialIcon icon={<FaLinkedin />} href="https://www.linkedin.com/in/anand-sharma-" />
                         </div>
                     </div>
 
@@ -34,7 +33,6 @@ const Footer = () => {
                             <li><FooterLink to="/features">Features</FooterLink></li>
                             <li><FooterLink to="/integrations">Integrations</FooterLink></li>
                             <li><FooterLink to="/pricing">Pricing</FooterLink></li>
-                            <li><FooterLink to="/roadmap">Roadmap</FooterLink></li>
                         </ul>
                     </div>
 
@@ -44,7 +42,6 @@ const Footer = () => {
                             <li><FooterLink to="/docs">Documentation</FooterLink></li>
                             <li><FooterLink to="/api">API Reference</FooterLink></li>
                             <li><FooterLink to="/blog">Blog</FooterLink></li>
-                            <li><FooterLink to="/community">Community</FooterLink></li>
                         </ul>
                     </div>
 
@@ -52,7 +49,6 @@ const Footer = () => {
                         <h4 className="font-bold text-slate-900 dark:text-white mb-6">Company</h4>
                         <ul className="space-y-3 text-sm text-slate-500 dark:text-slate-400">
                             <li><FooterLink to="/about">About Us</FooterLink></li>
-                            <li><FooterLink to="/careers">Careers</FooterLink></li>
                             <li><FooterLink to="/privacy">Privacy Policy</FooterLink></li>
                             <li><FooterLink to="/terms">Terms of Service</FooterLink></li>
                         </ul>
@@ -79,8 +75,8 @@ const FooterLink = ({ to, children }) => (
     </Link>
 );
 
-const SocialIcon = ({ icon }) => (
-    <a href="#" className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-violet-100 dark:hover:bg-violet-900/30 hover:text-violet-600 dark:hover:text-violet-400 transition-all">
+const SocialIcon = ({ icon, href }) => (
+    <a href={href} target="_blank" rel="noopener noreferrer" className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-violet-100 dark:hover:bg-violet-900/30 hover:text-violet-600 dark:hover:text-violet-400 transition-all">
         {icon}
     </a>
 );

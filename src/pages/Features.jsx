@@ -2,6 +2,10 @@ import React from 'react';
 import Footer from '../components/layout/Footer';
 import { FaRocket, FaCode, FaComments, FaGithub, FaLock, FaChartLine, FaCheck } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import ChatImage from '../assets/chat1.png';
+import GitHubImage from '../assets/GitHub1.png';
+import BoardImage from '../assets/Board1.png';
+import GeminiImage from '../assets/Gemini.png';
 
 const Features = () => {
     return (
@@ -23,7 +27,7 @@ const Features = () => {
                     </div>
                 </section>
 
-                {/* Feature 1: Real-time Communication */}
+                {/* Feature 1: Real-time Chat */}
                 <section className="py-16 bg-white dark:bg-[#020617]">
                     <div className="page-container">
                         <div className="flex flex-col md:flex-row items-center gap-12">
@@ -32,12 +36,12 @@ const Features = () => {
                                     <div className="w-16 h-16 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-2xl flex items-center justify-center text-3xl mb-6">
                                         <FaComments />
                                     </div>
-                                    <h3 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">Real-time Chat & Collaboration</h3>
+                                    <h3 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">Real-time Team Chat</h3>
                                     <p className="text-slate-600 dark:text-slate-400 text-lg leading-relaxed mb-6">
-                                        Seamlessly communicate with your team. Direct messages, group channels, and code snippet sharing with syntax highlighting.
+                                        Communicate with your team instantly. Send direct messages and collaborate in real-time to keep your projects moving forward.
                                     </p>
                                     <ul className="space-y-3">
-                                        {['Instant messaging', 'Syntax highlighted code blocks', 'File sharing'].map((item, i) => (
+                                        {['Instant messaging', 'User search', 'Active status indicators'].map((item, i) => (
                                             <li key={i} className="flex items-center text-slate-600 dark:text-slate-400">
                                                 <FaCheck className="text-emerald-500 mr-3" /> {item}
                                             </li>
@@ -46,13 +50,8 @@ const Features = () => {
                                 </div>
                             </div>
                             <div className="flex-1 order-1 md:order-2">
-                                {/* Visual placeholder or abstract composition */}
-                                <div className="relative h-80 w-full bg-slate-900 rounded-2xl overflow-hidden shadow-2xl border border-slate-800 group">
-                                    <div className="absolute inset-0 bg-gradient-to-br from-violet-600/20 to-indigo-600/20"></div>
-                                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-violet-500 rounded-full blur-3xl opacity-50"></div>
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        <FaComments className="text-8xl text-white/20 group-hover:scale-110 transition-transform duration-500" />
-                                    </div>
+                                <div className="relative h-80 w-full group flex items-center justify-center">
+                                    <img src={ChatImage} alt="Real-time Chat Interface" className="max-w-full max-h-full object-contain drop-shadow-2xl rounded-lg group-hover:scale-105 transition-transform duration-500" />
                                 </div>
                             </div>
                         </div>
@@ -64,11 +63,8 @@ const Features = () => {
                     <div className="page-container">
                         <div className="flex flex-col md:flex-row items-center gap-12">
                             <div className="flex-1">
-                                <div className="relative h-80 w-full bg-[#0d1117] rounded-2xl overflow-hidden shadow-2xl border border-slate-700 group">
-                                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-slate-500 rounded-full blur-3xl opacity-30"></div>
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        <FaGithub className="text-8xl text-white/20 group-hover:scale-110 transition-transform duration-500" />
-                                    </div>
+                                <div className="relative h-80 w-full group flex items-center justify-center">
+                                    <img src={GitHubImage} alt="GitHub Integration" className="max-w-full max-h-full object-contain drop-shadow-2xl rounded-lg group-hover:scale-105 transition-transform duration-500" />
                                 </div>
                             </div>
                             <div className="flex-1">
@@ -78,10 +74,10 @@ const Features = () => {
                                     </div>
                                     <h3 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">Deep GitHub Integration</h3>
                                     <p className="text-slate-600 dark:text-slate-400 text-lg leading-relaxed mb-6">
-                                        Track issues, view pull requests, and monitor repository activity without leaving OmniHub. Your code and project management acting as one.
+                                        Link your GitHub account to view repositories directly in OmniHub. Create new projects from existing repos with a single click.
                                     </p>
                                     <ul className="space-y-3">
-                                        {['Live repository activity', 'Issue tracking view', 'User repo search'].map((item, i) => (
+                                        {['View repositories', 'Visibility management', 'Repo-to-Project creation'].map((item, i) => (
                                             <li key={i} className="flex items-center text-slate-600 dark:text-slate-400">
                                                 <FaCheck className="text-emerald-500 mr-3" /> {item}
                                             </li>
@@ -104,10 +100,10 @@ const Features = () => {
                                     </div>
                                     <h3 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">Agile Project Management</h3>
                                     <p className="text-slate-600 dark:text-slate-400 text-lg leading-relaxed mb-6">
-                                        Stay on top of your deadlines with intuitive Kanban boards and sprint planning features.
+                                        Organize your work with intuitive Kanban boards. Track task progress and manage team contributions effectively.
                                     </p>
                                     <ul className="space-y-3">
-                                        {['Drag-and-drop Kanban', 'Progress tracking', 'Deadline notifications'].map((item, i) => (
+                                        {['Kanban boards', 'Task tracking', 'Team collaboration'].map((item, i) => (
                                             <li key={i} className="flex items-center text-slate-600 dark:text-slate-400">
                                                 <FaCheck className="text-emerald-500 mr-3" /> {item}
                                             </li>
@@ -116,12 +112,39 @@ const Features = () => {
                                 </div>
                             </div>
                             <div className="flex-1 order-1 md:order-2">
-                                <div className="relative h-80 w-full bg-slate-900 rounded-2xl overflow-hidden shadow-2xl border border-slate-800 group">
-                                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/20 to-teal-600/20"></div>
-                                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-emerald-500 rounded-full blur-3xl opacity-40"></div>
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        <FaChartLine className="text-8xl text-white/20 group-hover:scale-110 transition-transform duration-500" />
+                                <div className="relative h-80 w-full group flex items-center justify-center">
+                                    <img src={BoardImage} alt="Kanban Board" className="max-w-full max-h-full object-contain drop-shadow-2xl rounded-lg group-hover:scale-105 transition-transform duration-500" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Feature 4: AI Assistance */}
+                <section className="py-16 bg-slate-50 dark:bg-slate-900/50">
+                    <div className="page-container">
+                        <div className="flex flex-col md:flex-row items-center gap-12">
+                            <div className="flex-1">
+                                <div className="relative h-80 w-full group flex items-center justify-center">
+                                    <img src={GeminiImage} alt="AI Assistance" className="max-w-full max-h-full object-contain drop-shadow-2xl rounded-lg group-hover:scale-105 transition-transform duration-500" />
+                                </div>
+                            </div>
+                            <div className="flex-1">
+                                <div className="p-8">
+                                    <div className="w-16 h-16 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-2xl flex items-center justify-center text-3xl mb-6">
+                                        <FaRocket />
                                     </div>
+                                    <h3 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">AI-Powered Assistance</h3>
+                                    <p className="text-slate-600 dark:text-slate-400 text-lg leading-relaxed mb-6">
+                                        OmniHub Intelligence is your coding companion held directly within the platform. Get answers, generate code, and solve problems faster.
+                                    </p>
+                                    <ul className="space-y-3">
+                                        {['Gemini AI integration', 'Code generation', 'Instant answers'].map((item, i) => (
+                                            <li key={i} className="flex items-center text-slate-600 dark:text-slate-400">
+                                                <FaCheck className="text-emerald-500 mr-3" /> {item}
+                                            </li>
+                                        ))}
+                                    </ul>
                                 </div>
                             </div>
                         </div>

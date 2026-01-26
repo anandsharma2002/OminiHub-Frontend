@@ -18,21 +18,9 @@ const Sidebar = ({ isOpen, onClose }) => {
         { path: '/dashboard', label: 'Dashboard', icon: <FaHome /> },
         { path: '/projects', label: 'Projects', icon: <FaProjectDiagram /> },
         { path: '/progress', label: 'Progress', icon: <FaChartPie /> },
-
-        {
-            path: '/notifications',
-            label: 'Notifications',
-            icon: <FaBell />,
-            badge: unreadCount > 0 ? unreadCount : null
-        },
-        {
-            path: '/chat',
-            label: 'Chat',
-            icon: <FaComments />,
-            badge: chatUnreadCount > 0 ? chatUnreadCount : null
-        },
-        { path: '/docs', label: 'Documents', icon: <FaBook /> },
+        { path: '/chat', label: 'Chat', icon: <FaComments />, badge: chatUnreadCount > 0 ? chatUnreadCount : null},
         { path: '/github', label: 'GitHub', icon: <FaGithub /> },
+        { path: '/docs', label: 'Documents', icon: <FaBook /> },
         { path: '/settings', label: 'Settings', icon: <FaCog /> }
     ];
 
@@ -85,7 +73,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                 </div>
 
                 {/* Navigation */}
-                <div className="flex-1 py-6 flex flex-col space-y-1 px-3 sidebar-scroll">
+                <div className="flex-1 py-6 flex flex-col space-y-1 px-3 sidebar-scroll mt-6 md:mt-0">
                     {menuItems.map((item) => (
                         <NavLink
                             key={item.path}

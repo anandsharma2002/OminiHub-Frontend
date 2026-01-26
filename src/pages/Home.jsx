@@ -2,6 +2,10 @@ import React from 'react';
 import Footer from '../components/layout/Footer';
 import { FaRocket, FaTools, FaBook, FaArrowRight, FaCodeBranch, FaUsers, FaShieldAlt } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import DashboardImage from '../assets/Dashboard1.png';
+import ProjectImage from '../assets/Project1.png';
+import ChatImage2 from '../assets/chat2.png';
+import GeminiImage from '../assets/Gemini.png';
 
 const Home = () => {
     return (
@@ -9,7 +13,7 @@ const Home = () => {
 
             <main className="flex-grow">
                 {/* Hero Section */}
-                <section className="relative py-12 lg:py-32 overflow-hidden">
+                <section className="relative py-12 lg:py-10 overflow-hidden">
                     {/* Glowing Blobs */}
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[300px] md:w-[600px] h-[300px] md:h-[600px] bg-violet-500/20 rounded-full blur-[80px] md:blur-[120px] -z-10 animate-blob"></div>
                     <div className="absolute bottom-0 right-0 w-[250px] md:w-[500px] h-[250px] md:h-[500px] bg-indigo-500/20 rounded-full blur-[60px] md:blur-[100px] -z-10 animate-blob animation-delay-2000"></div>
@@ -44,17 +48,12 @@ const Home = () => {
 
                         {/* UI Mockup */}
                         <div className="mt-12 md:mt-20 mx-auto max-w-6xl rounded-2xl p-2 bg-gradient-to-b from-white/20 to-transparent backdrop-blur-sm border border-white/20 dark:border-white/10 shadow-2xl">
-                            <div className="rounded-xl overflow-hidden bg-slate-900 border border-slate-800 aspect-video relative group">
-                                {/* Simulating a dashboard image */}
-                                <div className="absolute inset-0 bg-slate-900 flex items-center justify-center text-slate-700">
-                                    {/* Placeholder Gradient if image fails */}
-                                    <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-violet-900/20"></div>
-                                    <img
-                                        src="https://placehold.co/1200x675/0f172a/ffffff?text=OmniHub+Premium+Dashboard"
-                                        alt="Dashboard Preview"
-                                        className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-700"
-                                    />
-                                </div>
+                            <div className="rounded-xl overflow-hidden bg-slate-900 border border-slate-800 relative group">
+                                <img
+                                    src={DashboardImage}
+                                    alt="Dashboard Preview"
+                                    className="w-full h-auto object-contain"
+                                />
                             </div>
                         </div>
                     </div>
@@ -77,19 +76,16 @@ const Home = () => {
                                 <div className="w-14 h-14 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-2xl flex items-center justify-center text-2xl mb-6">
                                     <FaCodeBranch />
                                 </div>
-                                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Advanced Project Management</h3>
+                                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Project Management</h3>
                                 <p className="text-slate-600 dark:text-slate-400 leading-relaxed mb-6">
-                                    Visualize your roadmap with premium Kanban boards, Gantt charts, and sprint planning tools designed specifically for engineering teams. Synchronize seamlessly with GitHub.
+                                    Visualize your workflow with intuitive Kanban boards. Track tasks, manage contributors, and streamline your development process in one central hub.
                                 </p>
-                                <div className="h-40 bg-slate-100 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 w-full overflow-hidden relative">
-                                    {/* Mockup decoration */}
-                                    <div className="absolute top-4 left-4 right-4 h-2 bg-slate-200 dark:bg-slate-700 rounded-full"></div>
-                                    <div className="absolute top-8 left-4 w-1/3 h-2 bg-slate-200 dark:bg-slate-700 rounded-full"></div>
-                                    <div className="absolute top-16 left-4 right-4 bottom-4 grid grid-cols-3 gap-4">
-                                        <div className="bg-white dark:bg-slate-900 rounded-lg shadow-sm"></div>
-                                        <div className="bg-white dark:bg-slate-900 rounded-lg shadow-sm"></div>
-                                        <div className="bg-white dark:bg-slate-900 rounded-lg shadow-sm"></div>
-                                    </div>
+                                <div className="rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 w-full mt-6 shadow-sm">
+                                    <img
+                                        src={ProjectImage}
+                                        alt="Project Management"
+                                        className="w-full h-auto object-cover"
+                                    />
                                 </div>
                             </div>
 
@@ -98,10 +94,13 @@ const Home = () => {
                                 <div className="w-14 h-14 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center text-2xl mb-6">
                                     <FaUsers />
                                 </div>
-                                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">Real-time Collaboration</h3>
+                                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">Real-time Chat</h3>
                                 <p className="text-slate-600 dark:text-slate-400">
-                                    Pair program, review code, and chat with your team without leaving the app.
+                                    Connect with your team instantly. Direct messaging helps you stay aligned without leaving the app.
                                 </p>
+                                <div className="mt-6 rounded-xl overflow-hidden shadow-sm border border-slate-100 dark:border-slate-700">
+                                    <img src={ChatImage2} alt="Real-time Chat" className="w-full h-auto object-cover" />
+                                </div>
                             </div>
 
                             {/* Card 3 */}
@@ -109,9 +108,9 @@ const Home = () => {
                                 <div className="w-14 h-14 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-2xl flex items-center justify-center text-2xl mb-6">
                                     <FaBook />
                                 </div>
-                                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">Interactive Docs</h3>
+                                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">Knowledge Base</h3>
                                 <p className="text-slate-600 dark:text-slate-400">
-                                    Turn your markdown into beautiful, searchable knowledge bases automatically.
+                                    Create and organize documentation. Keep your project details and guides accessible to everyone.
                                 </p>
                             </div>
 
@@ -119,15 +118,15 @@ const Home = () => {
                             <div className="md:col-span-2 card-glass p-8 group hover:border-indigo-500/30 transition-colors flex flex-col md:flex-row items-center gap-8">
                                 <div className="flex-1">
                                     <div className="w-14 h-14 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center text-2xl mb-6">
-                                        <FaShieldAlt />
+                                        <FaRocket />
                                     </div>
-                                    <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Enterprise Security</h3>
+                                    <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">AI-Powered Assistance</h3>
                                     <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                                        SSO, Audit Logs, and Role-Based Access Control built-in from day one. Your data is encrypted at rest and in transit.
+                                        Leverage the power of Gemini AI directly within OmniHub. Generate code, brainstorm ideas, and get answers to your technical questions instantly.
                                     </p>
                                 </div>
-                                <div className="w-full md:w-1/3 h-32 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-2xl shadow-lg flex items-center justify-center text-white/90 text-4xl">
-                                    <FaShieldAlt />
+                                <div className="w-full md:w-1/3 rounded-2xl overflow-hidden shadow-lg border border-slate-100 dark:border-slate-700">
+                                    <img src={GeminiImage} alt="AI Assistance" className="w-full h-full object-cover" />
                                 </div>
                             </div>
                         </div>

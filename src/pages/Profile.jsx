@@ -119,7 +119,7 @@ const Profile = () => {
 
     return (
         <div className="page-container">
-            <div className="mb-8 flex justify-between items-center">
+            <div className="mb-8 flex justify-between items-center mt-5 md:mt-0">
                 <div>
                     <h1 className="text-3xl font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
                         My Profile
@@ -366,7 +366,13 @@ const Profile = () => {
                     {/* Documents Section */}
                     {/* Documents Section */}
                     <div>
-                        <DocumentsSection userId={user._id} isOwner={true} />
+                        <DocumentsSection
+                            userId={user._id}
+                            isOwner={true}
+                            allowAction={false}
+                            allowDownload={false}
+                            showPrivate={false}
+                        />
                     </div>
 
                     {/* GitHub Integration Section */}

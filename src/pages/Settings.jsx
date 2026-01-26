@@ -11,7 +11,7 @@ const Settings = () => {
 
     return (
         <div className="page-container">
-            <div className="mb-8">
+            <div className="mb-8 mt-5 md:mt-0">
                 <h1 className="text-3xl font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
                     Settings
                 </h1>

@@ -141,7 +141,7 @@ const ContributorsComponent = ({ project, onUpdate }) => {
                                 <td className="px-6 py-4 text-green-500 text-sm">Active</td>
                                 <td className="px-6 py-4"></td>
                             </tr>
-                            {project.contributors?.map(contributor => (
+                            {project.contributors?.filter(c => c.user._id !== project.owner._id).map(contributor => (
                                 <tr key={contributor._id}>
                                     <td className="px-6 py-4 flex items-center space-x-3">
                                         <div className="w-8 h-8 rounded-full bg-indigo-500 text-white flex items-center justify-center font-bold text-xs">{contributor.user?.username?.[0]?.toUpperCase()}</div>

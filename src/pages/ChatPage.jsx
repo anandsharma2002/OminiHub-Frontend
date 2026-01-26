@@ -240,7 +240,7 @@ const ChatPage = () => {
     };
 
     return (
-        <div className="h-[calc(100vh-var(--nav-height))] md:h-[calc(100vh-var(--nav-height)-2rem)] md:py-4 md:px-6 lg:px-8 max-w-7xl mx-auto overflow-hidden flex flex-col md:flex-row md:gap-4 md:mt-4">
+        <div className="h-[calc(100vh-var(--nav-height))] md:h-[calc(100vh-var(--nav-height)-2rem)] md:py-4 md:px-6 lg:px-8 max-w-7xl mx-auto overflow-hidden flex flex-col md:flex-row md:gap-4 md:mt-4 mt-8 md:mt-0">
             {/* Mobile: Show List if no active chat, else hidden */}
             <div className={`
                 md:w-[350px] w-full flex flex-col bg-white dark:bg-slate-900 md:rounded-l-2xl border-r border-slate-200 dark:border-slate-800 h-full

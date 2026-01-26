@@ -6,7 +6,7 @@ import { useSocket } from '../../context/SocketContext';
 import { FaFileAlt } from 'react-icons/fa';
 import { useConfirm } from '../../context/ConfirmContext';
 
-const DocumentsSection = ({ userId, isOwner }) => {
+const DocumentsSection = ({ userId, isOwner, allowAction = true, allowDownload = true, showPrivate = true }) => {
     const [documents, setDocuments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [editDoc, setEditDoc] = useState(null);
@@ -88,8 +88,10 @@ const DocumentsSection = ({ userId, isOwner }) => {
 
     if (loading) return <div className="text-center p-4 text-slate-500 animate-pulse">Loading documents...</div>;
 
-    if (documents.length === 0) {
-        if (isOwner) return (
+    const visibleDocuments = documents.filter(doc => showPrivate || doc.privacy !== 'private');
+
+    if (visibleDocuments.length === 0) {
+        if (isOwner && showPrivate) return (
             <div className="card-glass p-6 border-2 border-dashed border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center text-slate-500">
                 <FaFileAlt className="text-4xl mb-2 opacity-20" />
                 <p>You haven't uploaded any documents yet.</p>
@@ -105,12 +107,13 @@ const DocumentsSection = ({ userId, isOwner }) => {
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white">Documents</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {documents.map(doc => (
+                {visibleDocuments.map(doc => (
                     <DocumentCard
                         key={doc._id}
-                        doc={{ ...doc, readOnly: !isOwner }}
+                        doc={{ ...doc, readOnly: !(isOwner && allowAction) }}
                         onDelete={handleDelete}
                         onUpdate={handleUpdate}
+                        allowDownload={allowDownload}
                     />
                 ))}
             </div>

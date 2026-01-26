@@ -13,14 +13,14 @@ const Pricing = () => {
             price: isAnnual ? 0 : 0,
             features: [
                 'Unlimited Public Projects',
-                'Basic Kanban Boards',
-                'Community Support',
-                '1GB Storage',
-                'Real-time Chat (Community)'
+                'Kanban Boards',
+                'Standard Community Support',
+                'Project Documentation',
+                'Basic Chat Features'
             ],
             notIncluded: [
                 'Private Projects',
-                'Advanced Analytics',
+                'AI Assistant Access',
                 'Priority Support'
             ],
             cta: 'Start for Free',
@@ -33,29 +33,29 @@ const Pricing = () => {
             features: [
                 'Everything in Starter',
                 'Unlimited Private Projects',
-                'Advanced Gantt & Kanban',
-                '10GB Storage',
+                'AI-Powered Assistant',
+                'Advanced Search',
                 'Priority Email Support',
-                'Interactive Documentation'
+                'Team Collaboration Tools'
             ],
             notIncluded: [
-                'SSO & SAML',
-                'Dedicated Account Manager'
+                'Dedicated Account Manager',
+                'Custom Integrations'
             ],
             cta: 'Get Started',
             highlight: true
         },
         {
             name: 'Enterprise',
-            description: 'Advanced security and control for large orgs.',
+            description: 'Scalable solutions for large organizations.',
             price: isAnnual ? 49 : 59,
             features: [
                 'Everything in Pro',
-                'SSO & SAML Authentication',
                 'Unlimited Storage',
-                'Audit Logs',
                 'Dedicated Account Manager',
-                '24/7 Phone Support'
+                '24/7 Phone Support',
+                'Custom Onboarding',
+                'SLA Guarantees'
             ],
             notIncluded: [],
             cta: 'Contact Sales',
@@ -103,8 +103,8 @@ const Pricing = () => {
                                 <div
                                     key={index}
                                     className={`relative rounded-2xl p-8 transition-all duration-300 ${plan.highlight
-                                            ? 'bg-white dark:bg-slate-900 border-2 border-violet-500 shadow-xl shadow-violet-500/20 scale-105 z-10'
-                                            : 'bg-white/70 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 backdrop-blur-xl hover:border-violet-300 dark:hover:border-violet-700'
+                                        ? 'bg-white dark:bg-slate-900 border-2 border-violet-500 shadow-xl shadow-violet-500/20 scale-105 z-10'
+                                        : 'bg-white/70 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 backdrop-blur-xl hover:border-violet-300 dark:hover:border-violet-700'
                                         }`}
                                 >
                                     {plan.highlight && (
@@ -123,8 +123,8 @@ const Pricing = () => {
                                     <Link
                                         to="/signup"
                                         className={`block w-full text-center py-3 rounded-xl font-medium transition-all ${plan.highlight
-                                                ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:shadow-lg hover:shadow-violet-500/30'
-                                                : 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700'
+                                            ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:shadow-lg hover:shadow-violet-500/30'
+                                            : 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700'
                                             }`}
                                     >
                                         {plan.cta}
