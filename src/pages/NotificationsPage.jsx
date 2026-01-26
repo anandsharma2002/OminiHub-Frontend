@@ -11,7 +11,7 @@ const NotificationsPage = () => {
     }, []);
 
     return (
-        <div className="page-container">
+        <div className="page-container mt-5 md:mt-0">
             <div className="flex items-center space-x-3 mb-8">
                 <FaBell className="text-2xl text-violet-600 dark:text-violet-400" />
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">

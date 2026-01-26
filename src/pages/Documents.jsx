@@ -91,14 +91,9 @@ const Documents = () => {
 
     return (
         <div className="page-container">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 mt-5 md:mt-0">
                 <div className="flex items-center">
-                    <button
-                        className="md:hidden mr-4 text-slate-600 dark:text-slate-300 hover:text-violet-600"
-                        onClick={() => setSidebarOpen(true)}
-                    >
-                        <FaBars size={24} />
-                    </button>
+
                     <div>
                         <h1 className="text-3xl font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
                             Documents

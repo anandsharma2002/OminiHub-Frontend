@@ -88,7 +88,7 @@ const GitHubPage = () => {
     return (
         <div className="page-container">
             <div className='flex flex-col sm:flex-row items-center justify-between mb-8 gap-4 sm:gap-0'>
-                <div className="text-center sm:text-left">
+                <div className="text-center sm:text-left mt-5 md:mt-0">
                     <h1 className="text-2xl font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent flex items-center justify-center sm:justify-start">
                         <FaGithub className="mr-3 text-slate-800 dark:text-white" />
                         GitHub Dashboard
@@ -130,6 +130,8 @@ const GitHubPage = () => {
                         visibleRepos={visibleRepos}
                         onToggleRepo={toggleRepo}
                         onCreateProject={handleCreateProject}
+                        allowAddLink={false}
+                        allowCreateProject={true}
                     />
                 ) : (
                     <div className="card-glass p-12 text-center max-w-2xl mx-auto mt-10">

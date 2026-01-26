@@ -114,7 +114,7 @@ const UserProfile = () => {
     };
 
     return (
-        <div className="page-container">
+        <div className="page-container mt-5 md:mt-0">
             <button
                 onClick={() => navigate(-1)}
                 className="flex items-center space-x-2 text-slate-500 hover:text-violet-600 mb-6 transition-colors"

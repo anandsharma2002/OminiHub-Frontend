@@ -90,7 +90,7 @@ const ProgressDashboard = () => {
 
     return (
         <div className="page-container">
-            <div className="mb-8">
+            <div className="mb-8 mt-5 md:mt-0">
                 <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
                     <FaChartPie className="text-violet-600" />
                     Project Progress

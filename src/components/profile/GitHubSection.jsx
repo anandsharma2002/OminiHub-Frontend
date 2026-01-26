@@ -1,11 +1,13 @@
-
 import React, { useState, useEffect } from 'react';
-import { FaGithub, FaStar, FaCodeBranch, FaCircle } from 'react-icons/fa';
+import { FaGithub, FaStar, FaCodeBranch, FaCircle, FaExternalLinkAlt, FaPlus, FaTimes } from 'react-icons/fa';
 import api from '../../api/axios';
 
-const GitHubSection = ({ username, isOwner, visibleRepos = [], isPublic, onToggleRepo, onTogglePublic, onCreateProject }) => {
+const GitHubSection = ({ username, isOwner, visibleRepos = [], isPublic, onToggleRepo, onTogglePublic, onCreateProject, allowAddLink = false, allowCreateProject = false }) => {
     const [data, setData] = useState(null);
     const [visibleCount, setVisibleCount] = useState(6);
+    const [showLinkPopup, setShowLinkPopup] = useState(false);
+    const [selectedRepo, setSelectedRepo] = useState(null);
+    const [linkInput, setLinkInput] = useState('');
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -164,6 +166,37 @@ const GitHubSection = ({ username, isOwner, visibleRepos = [], isPublic, onToggl
                                             <p className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2 mb-4 min-h-[2.5rem]">
                                                 {repo.description || 'No description available'}
                                             </p>
+
+                                            {/* Hosting Link & Add Button */}
+                                            <div className="flex justify-between items-center mt-auto mb-2 relative z-20">
+                                                {repo.hostingLink && (
+                                                    <a
+                                                        href={repo.hostingLink}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        className="flex items-center gap-1 text-xs font-bold text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300"
+                                                    >
+                                                        <FaExternalLinkAlt size={10} /> Visit Link
+                                                    </a>
+                                                )}
+
+                                                {allowAddLink && isOwner && (
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            e.stopPropagation();
+                                                            setSelectedRepo(repo);
+                                                            setLinkInput(repo.hostingLink || '');
+                                                            setShowLinkPopup(true);
+                                                        }}
+                                                        className="ml-auto text-xs flex items-center gap-1 px-2 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-md text-slate-600 dark:text-slate-300 transition-colors"
+                                                        title="Add/Edit Hosting Link"
+                                                    >
+                                                        <FaPlus size={8} /> Link
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
 
                                         <div className="flex items-center space-x-4 text-xs text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-700/50 pt-3 mt-auto">
@@ -179,7 +212,7 @@ const GitHubSection = ({ username, isOwner, visibleRepos = [], isPublic, onToggl
                                             </div>
 
                                             {/* Create Project Button */}
-                                            {isOwner && (
+                                            {allowCreateProject && isOwner && (
                                                 <button
                                                     onClick={(e) => {
                                                         e.preventDefault();
@@ -223,6 +256,77 @@ const GitHubSection = ({ username, isOwner, visibleRepos = [], isPublic, onToggl
                         </div>
                     )}
                 </>
+            )}
+            {/* Link Popup Modal */}
+            {showLinkPopup && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md border border-slate-200 dark:border-slate-800 animate-in fade-in zoom-in duration-200">
+                        <div className="p-6">
+                            <div className="flex justify-between items-center mb-6">
+                                <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                                    Add Hosting Link
+                                </h3>
+                                <button
+                                    onClick={() => setShowLinkPopup(false)}
+                                    className="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                >
+                                    <FaTimes className="text-slate-500" />
+                                </button>
+                            </div>
+
+                            <div className="mb-6">
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                    Hosting URL for <span className="text-violet-600 font-bold">{selectedRepo?.name}</span>
+                                </label>
+                                <input
+                                    type="url"
+                                    value={linkInput}
+                                    onChange={(e) => setLinkInput(e.target.value)}
+                                    placeholder="https://your-project-demo.com"
+                                    className="w-full px-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all text-slate-900 dark:text-white"
+                                    autoFocus
+                                />
+                            </div>
+
+                            <div className="flex justify-end gap-3">
+                                <button
+                                    onClick={() => setShowLinkPopup(false)}
+                                    className="px-4 py-2 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={async () => {
+                                        try {
+                                            await api.put('/users/repo-link', {
+                                                repoId: selectedRepo.id,
+                                                url: linkInput
+                                            });
+
+                                            // Update local state
+                                            setData(prev => ({
+                                                ...prev,
+                                                repos: prev.repos.map(r =>
+                                                    r.id === selectedRepo.id
+                                                        ? { ...r, hostingLink: linkInput }
+                                                        : r
+                                                )
+                                            }));
+
+                                            setShowLinkPopup(false);
+                                        } catch (err) {
+                                            console.error("Failed to save link", err);
+                                            alert("Failed to save link. Please try again.");
+                                        }
+                                    }}
+                                    className="px-6 py-2 rounded-xl text-sm font-bold text-white bg-violet-600 hover:bg-violet-700 transition-colors shadow-lg shadow-violet-500/25"
+                                >
+                                    Save Link
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );
