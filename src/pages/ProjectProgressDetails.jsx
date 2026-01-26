@@ -218,16 +218,26 @@ const ProjectProgressDetails = () => {
     return (
         <div className="page-container">
             {/* Header */}
-            <div className="flex items-center space-x-4 mb-8">
-                <Link to="/progress" className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">
-                    <FaArrowLeft />
-                </Link>
-                <div>
-                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center">
-                        {project.name} Progress
-                    </h1>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm">Real-time breakdown</p>
+            <div className="flex justify-between items-center mb-8">
+                <div className="flex items-center space-x-4">
+                    <Link to="/progress" className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">
+                        <FaArrowLeft />
+                    </Link>
+                    <div>
+                        <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center">
+                            {project.name} Progress
+                        </h1>
+                        <p className="text-slate-500 dark:text-slate-400 text-sm">Real-time breakdown</p>
+                    </div>
                 </div>
+
+                <Link
+                    to={`/projects/${id}`}
+                    className="flex items-center space-x-2 bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm shadow-violet-500/30"
+                >
+                    <FaTasks />
+                    <span>Tasks</span>
+                </Link>
             </div>
 
             {/* Top Section: Chart & Summary */}
@@ -300,7 +310,7 @@ const TaskTable = ({ title, tasks, headerColor }) => (
                 <span className="text-xs bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-full text-slate-500">{tasks.length}</span>
             </h3>
         </div>
-        <div className="overflow-y-auto flex-1 p-2 space-y-2 scrollbar-thin">
+        <div className="overflow-y-auto flex-1 p-2 space-y-2 themed-scrollbar">
             {tasks.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-slate-400 opacity-50">
                     <p className="text-sm">No items</p>

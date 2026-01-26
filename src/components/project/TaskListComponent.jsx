@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import taskAPI from '../../api/task';
 import boardAPI from '../../api/board';
-import { FaPlus, FaCheckCircle, FaCircle, FaChevronRight, FaChevronDown, FaTrash, FaTicketAlt, FaEdit, FaTimes, FaSave } from 'react-icons/fa';
+import { FaPlus, FaCheckCircle, FaCircle, FaChevronRight, FaChevronDown, FaTrash, FaTicketAlt, FaEdit, FaTimes, FaSave, FaChartPie } from 'react-icons/fa';
 import { useSocket } from '../../context/SocketContext';
 import { useToast } from '../../context/ToastContext';
 import { useConfirm } from '../../context/ConfirmContext';
@@ -211,6 +212,7 @@ const TaskItem = ({ task, allTasks, level, onDelete, onUpdate, onConvert, onAddS
 };
 
 const TaskListComponent = ({ projectId }) => {
+    const navigate = useNavigate();
     const [tasks, setTasks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showCreateForm, setShowCreateForm] = useState(null); // { parentId, type } or null
@@ -337,12 +339,20 @@ const TaskListComponent = ({ projectId }) => {
         <div className="max-w-4xl mx-auto">
             <div className="mb-6 flex justify-between items-center">
                 <h2 className="text-lg font-bold text-slate-900 dark:text-white">Task Hierarchy</h2>
-                <button
-                    onClick={() => setShowCreateForm({ parentId: null, type: 'Heading' })}
-                    className="btn-primary flex items-center text-sm px-3 py-1.5"
-                >
-                    <FaPlus className="mr-2" /> Add Main Heading
-                </button>
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => navigate(`/projects/${projectId}/progress`)}
+                        className="flex items-center text-sm px-4 py-2 rounded-lg font-medium transition-all bg-violet-50 dark:bg-violet-900/10 text-violet-600 dark:text-violet-400 hover:bg-violet-100 dark:hover:bg-violet-900/20"
+                    >
+                        <FaChartPie className="mr-2" /> Progress
+                    </button>
+                    <button
+                        onClick={() => setShowCreateForm({ parentId: null, type: 'Heading' })}
+                        className="btn-primary flex items-center text-sm px-3 py-1.5"
+                    >
+                        <FaPlus className="mr-2" /> Add Main Heading
+                    </button>
+                </div>
             </div>
 
             {/* Root Level Form */}

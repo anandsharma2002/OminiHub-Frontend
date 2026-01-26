@@ -53,6 +53,7 @@ const ProjectDetails = () => {
     }, [id]);
 
     // Real-time Room Joining
+    // Real-time Room Joining
     useEffect(() => {
         if (!socket || !id) return;
 
@@ -64,13 +65,30 @@ const ProjectDetails = () => {
             socket.emit('join_entity', roomName);
         };
 
+        const handleProjectUpdated = (updatedProject) => {
+            if (updatedProject._id === id) {
+                setProject(prev => ({ ...prev, ...updatedProject }));
+            }
+        };
+
+        const handleProjectDeleted = ({ projectId }) => {
+            if (projectId === id) {
+                success('Project was deleted');
+                navigate('/projects');
+            }
+        };
+
         socket.on('connect', handleConnect);
+        socket.on('project_updated', handleProjectUpdated);
+        socket.on('project_deleted', handleProjectDeleted);
 
         return () => {
             socket.emit('leave_entity', roomName);
             socket.off('connect', handleConnect);
+            socket.off('project_updated', handleProjectUpdated);
+            socket.off('project_deleted', handleProjectDeleted);
         };
-    }, [socket, id]);
+    }, [socket, id, navigate, success]);
 
     const handleUpdate = async (e) => {
         e.preventDefault();
