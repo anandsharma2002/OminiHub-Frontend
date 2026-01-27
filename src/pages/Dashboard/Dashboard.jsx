@@ -129,17 +129,7 @@ const Dashboard = () => {
                                 <p className="text-xs text-slate-500 dark:text-slate-400 capitalize">{user?.role}</p>
                             </div>
                         </div>
-                        <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
-                            <h4 className="text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wider">Quick Actions</h4>
-                            <div className="grid grid-cols-2 gap-2">
-                                <Link to="/documents" className="p-2 text-center rounded bg-white dark:bg-slate-700 dark:text-slate-300 text-slate-600 text-sm hover:text-violet-600 shadow-sm border border-slate-100 dark:border-slate-600">
-                                    My Docs
-                                </Link>
-                                <Link to="/settings" className="p-2 text-center rounded bg-white dark:bg-slate-700 dark:text-slate-300 text-slate-600 text-sm hover:text-violet-600 shadow-sm border border-slate-100 dark:border-slate-600">
-                                    Settings
-                                </Link>
-                            </div>
-                        </div>
+
                     </div>
                 </div>
             </div>

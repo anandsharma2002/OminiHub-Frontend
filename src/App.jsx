@@ -30,6 +30,7 @@ import ProjectsPage from './pages/ProjectsPage';
 import ProjectDetails from './pages/ProjectDetails';
 import ProgressDashboard from './pages/ProgressDashboard';
 import ProjectProgressDetails from './pages/ProjectProgressDetails';
+import AdminPanel from './pages/Admin/AdminPanel';
 
 import DashboardLayout from './components/layout/DashboardLayout';
 import { ThemeProvider } from './context/ThemeContext';
@@ -61,6 +62,7 @@ function App() {
                                                 {/* Protected Routes */}
                                                 <Route element={<ProtectedRoute />}>
                                                     <Route element={<DashboardLayout />}>
+                                                        <Route path="/admin-panel" element={<AdminPanel />} />
                                                         <Route path="/dashboard" element={<Dashboard />} />
                                                         <Route path="/projects" element={<ProjectsPage />} />
                                                         <Route path="/projects/:id" element={<ProjectDetails />} />

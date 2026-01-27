@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { FaHome, FaProjectDiagram, FaTasks, FaBook, FaCog, FaSignOutAlt, FaChevronLeft, FaChevronRight, FaTimes, FaGithub, FaBell, FaComments, FaChartPie } from 'react-icons/fa';
+import { FaHome, FaProjectDiagram, FaTasks, FaBook, FaCog, FaSignOutAlt, FaChevronLeft, FaChevronRight, FaTimes, FaGithub, FaBell, FaComments, FaChartPie, FaShieldAlt } from 'react-icons/fa';
 import useAuth from '../../hooks/useAuth';
 import useNotifications from '../../hooks/useNotifications';
 
 const Sidebar = ({ isOpen, onClose }) => {
     const [isLocked, setIsLocked] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
-    const { logout } = useAuth();
+    const { logout, user } = useAuth(); // Destructure user
     const { unreadCount, chatUnreadCount } = useNotifications();
     const location = useLocation();
 
@@ -18,11 +18,15 @@ const Sidebar = ({ isOpen, onClose }) => {
         { path: '/dashboard', label: 'Dashboard', icon: <FaHome /> },
         { path: '/projects', label: 'Projects', icon: <FaProjectDiagram /> },
         { path: '/progress', label: 'Progress', icon: <FaChartPie /> },
-        { path: '/chat', label: 'Chat', icon: <FaComments />, badge: chatUnreadCount > 0 ? chatUnreadCount : null},
+        { path: '/chat', label: 'Chat', icon: <FaComments />, badge: chatUnreadCount > 0 ? chatUnreadCount : null },
         { path: '/github', label: 'GitHub', icon: <FaGithub /> },
         { path: '/docs', label: 'Documents', icon: <FaBook /> },
         { path: '/settings', label: 'Settings', icon: <FaCog /> }
     ];
+
+    if (user?.role === 'SuperAdmin') {
+        menuItems.splice(1, 0, { path: '/admin-panel', label: 'Admin Panel', icon: <FaShieldAlt /> });
+    }
 
     return (
         <>
